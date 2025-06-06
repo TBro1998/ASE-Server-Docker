@@ -85,7 +85,7 @@ RUN set -ex; \
 
 COPY scripts/* /home/steam/
 COPY ArkApi_3.56/* /home/steam/arkserver/ShooterGame/Binaries/Win64/
-RUN chmod -R +x /home/steam
+RUN chmod +x /home/steam/*.sh
 
 WORKDIR /home/steam
 ENTRYPOINT ["./start_server.sh"]
