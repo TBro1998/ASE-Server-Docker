@@ -5,6 +5,9 @@ echo "##### 首次运行初始化脚本"
 echo "##### $(date)"
 echo "###################################################"
 
+# 创建mod下载目录
+MOD_DOWNLOAD_DIR="/home/steam/download"
+mkdir -p $MOD_DOWNLOAD_DIR
 
 # 读取配置文件
 if [ -f "server.cfg" ]; then
@@ -26,10 +29,10 @@ if [ "${MODIDS}" != "" ]; then
     # 为每个mod创建下载目录
     for modid in $(echo $MODIDS | tr ',' ' '); do
         echo " [*] 下载mod: $modid"
-        steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login anonymous +workshop_download_item 346110 $modid +quit
+        steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $MOD_DOWNLOAD_DIR +login anonymous +workshop_download_item 346110 $modid +quit
         
         echo " [*] 安装mod: $modid"
-        python3 Ark_Mod_Install.py --workingdir $INSTALL_DIR --modid $modid --namefile
+        python3 Ark_Mod_Install.py --workingdir $MOD_DOWNLOAD_DIR --modid $modid --namefile --installdir $INSTALL_DIR
     done
 else
     echo " [i] 跳过mod更新"
