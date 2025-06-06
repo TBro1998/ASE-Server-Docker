@@ -138,25 +138,6 @@ class ArkModInstaller:
             log("创建mod名称文件")
             self.create_mod_name_txt(ark_mod_folder)
 
-        old_name = os.path.join(
-            self.working_dir, "ShooterGame", "Content", "Mods", self.modid, ".mod"
-        )
-        new_name = os.path.join(
-            self.working_dir,
-            "ShooterGame",
-            "Content",
-            "Mods",
-            self.modid,
-            f"{self.modid}.mod",
-        )
-        new_path = os.path.join(
-            self.install_dir, "ShooterGame", "Content", "Mods", f"{self.modid}.mod"
-        )
-        if os.path.isfile(old_name):
-            os.rename(old_name, new_name)
-            if os.path.isfile(new_path):
-                os.remove(new_path)
-            shutil.move(new_name, ark_mod_folder)
         return True
 
     def create_mod_name_txt(self, mod_folder):
@@ -171,19 +152,11 @@ class ArkModInstaller:
             return False
 
         log("[+] 写入.mod文件")
-        with open(
-            os.path.join(
-                self.working_dir,
-                "steamapps",
-                "workshop",
-                "content",
-                "346110",
-                self.modid,
-                r"WindowsNoEditor",
-                r".mod",
-            ),
-            "w+b",
-        ) as f:
+        mod_file_path = os.path.join(
+            self.install_dir, "ShooterGame", "Content", "Mods", f"{self.modid}.mod"
+        )
+
+        with open(mod_file_path, "w+b") as f:
             modid = int(self.modid)
             f.write(struct.pack("Ixxxx", modid))
             self.write_ue4_string("modName", f)
