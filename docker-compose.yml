@@ -1,0 +1,22 @@
+services:
+  servers:
+    image: tbro98/arkserver:latest
+    container_name: arkserver
+    restart: unless-stopped
+    ports:
+      - "7777:7777/udp"
+      - "7777:7777/tcp"
+      - "7778:7778/udp"
+      - "7778:7778/tcp"
+      - "27015:27015/udp"
+      - "27015:27015/tcp"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./Saved:/home/steam/arkserver/ShooterGame/Saved
+      - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
+      - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
+      - ./server.cfg:/home/steam/server.cfg
+    # privileged: true
+    # tty: true
+    # stdin_open: true 

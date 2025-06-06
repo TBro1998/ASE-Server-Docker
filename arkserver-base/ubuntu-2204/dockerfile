@@ -1,0 +1,33 @@
+FROM ubuntu:22.04
+
+# 设置ARK服务器的Steam ID和环境变量
+ENV STEAM_ID=376030 \
+    STEAM_USER=anonymous \
+    INSTALL_DIR='/home/steam/arkserver' \
+    STEAMCMD_PATH='/home/steam/steamcmd' 
+
+# 安装必要的软件包
+RUN apt-get update && \
+    apt-get install -y \
+    lib32gcc-s1 \
+    curl \
+    ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    # 创建steam用户
+    useradd -m -s /bin/bash steam 
+
+USER steam
+# 安装SteamCMD
+RUN mkdir -p ${STEAMCMD_PATH} && \
+    cd ${STEAMCMD_PATH} && \
+    curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - && \
+    chmod +x steamcmd.sh
+
+
+# 下载和安装ARK服务器
+RUN mkdir -p $INSTALL_DIR && \
+    cd $STEAMCMD_PATH && \
+    ./steamcmd.sh +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $STEAM_ID validate +quit && \
+    # 清理SteamCMD缓存文件
+    rm -rf /home/steam/Steam/logs/* /home/steam/Steam/appcache/* /home/steam/.steam/logs/* /home/steam/.steam/appcache/*
