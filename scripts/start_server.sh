@@ -57,7 +57,7 @@ echo "管理员密码: ${ADMIN_PASSWORD:-}"
 
 # Start server with proton
 SERVER_CMD="$PROTON run ShooterGameServer.exe \
-  ${MAP:-TheIsland}?listen?Port=7777?QueryPort=27015?MaxPlayers=${MAX_PLAYERS:-70}?AllowCrateSpawnsOnTopOfStructures=True \
+  ${MAP:-TheIsland}?listen?Port=${PORT:-7777}?QueryPort=${QUERYPORT:-27015}?MaxPlayers=${MAX_PLAYERS:-70}?AllowCrateSpawnsOnTopOfStructures=True \
   ${SERVER_ARGS}"
 
 #  -NoBattlEye -servergamelog -ServerAllowAnsel -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 

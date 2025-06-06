@@ -22,7 +22,7 @@ RUN mkdir -p ${STEAM_PATH} \
     && mkdir -p ${STEAM_PATH}/compatibilitytools.d/ \
     && mkdir -p /root/.config/protonfixes \
     && mkdir -p ${STEAM_PATH}/steamapps/compatdata/${STEAM_ID} \
-    && wget -O - \
+    && wget -q -O - \
     https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz \
     | tar -xz -C ${STEAM_PATH}/compatibilitytools.d/ \
     && cp -r ${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION}/files/share/default_pfx ${STEAM_PATH}/steamapps/compatdata/${STEAM_ID} 
