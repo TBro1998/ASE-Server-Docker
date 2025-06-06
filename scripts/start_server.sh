@@ -8,7 +8,6 @@ echo "###################################################"
 
 # 创建mod下载目录
 MOD_DOWNLOAD_DIR="/home/steam/download"
-mkdir -p $MOD_DOWNLOAD_DIR
 
 # 读取配置文件
 if [ -f "server.cfg" ]; then
@@ -33,13 +32,19 @@ fi
 
 if [ "${UPDATE_MODS}" = "true" ] && [ "${MODIDS}" != "" ]; then
    echo " [*] 开始下载和安装mod"
+    # 计算mod总数
+    total_mods=$(echo $MODIDS | tr ',' '\n' | wc -l)
+    current_mod=0
+    
     # 为每个mod创建下载目录
     for modid in $(echo $MODIDS | tr ',' ' '); do
-        echo " [*] 下载mod: $modid"
-        steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $MOD_DOWNLOAD_DIR +login anonymous +workshop_download_item 346110 $modid +quit
+        current_mod=$((current_mod + 1))
+        mkdir -p $MOD_DOWNLOAD_DIR/$modid
+        echo " [*] 下载mod: $modid (${current_mod}/${total_mods})"
+        steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $MOD_DOWNLOAD_DIR/$modid +login anonymous +workshop_download_item 346110 $modid +quit
         
-        echo " [*] 安装mod: $modid"
-        python3 Ark_Mod_Install.py --workingdir $MOD_DOWNLOAD_DIR --modid $modid --namefile --installdir $INSTALL_DIR
+        echo " [*] 安装mod: $modid (${current_mod}/${total_mods})"
+        python3 Ark_Mod_Install.py --workingdir $MOD_DOWNLOAD_DIR/$modid --modid $modid --namefile --installdir $INSTALL_DIR
     done
 else
     echo " [i] 跳过mod更新"
