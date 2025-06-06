@@ -1,7 +1,9 @@
 # Docker ARK 服务器
 
 这是一个基于Docker的ARK: Survival Evolved游戏服务器，使用GE-Proton运行Windows版ARK服务器，支持ArkApi。  
-包含了构建时最新的服务端文件和ArkApi文件。  
+包含了构建时最新的服务端文件和ArkApi文件。    
+Docker容器创建时会强制更新steamcmd和ARK服务器文件和下载Mods。
+
 
 ## 灵感及部分代码来源：
 [Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server)

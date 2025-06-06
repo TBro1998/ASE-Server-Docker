@@ -1,7 +1,10 @@
 # Docker ARK Server
 
+[中文文档](README-Zh.md)  
+
 This is a Docker-based ARK: Survival Evolved game server that uses GE-Proton to run the Windows version of the ARK server, with ArkApi support.  
-It includes the latest server files and ArkApi files at build time.
+It includes the latest server files and ArkApi files at build time.  
+The Docker container will force update steamcmd and ARK server files and download Mods during creation.
 
 ## Inspiration and Code Sources
 [Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server)
