@@ -15,6 +15,9 @@ The Docker container will force update steamcmd and ARK server files and downloa
   - Including the latest server files has its pros and cons. While it saves download time during initial deployment for multi-server setups, we may release a Docker image without server files in the future based on needs.
   - Compared to running directly on Windows, it will occupy more disk space.
 
+## Known Issues
+  - When running the server with GE-Proton, server output information cannot be viewed in the container logs
+
 ## Future Plans
   - Test performance differences between running the server directly on Windows versus using GE-Proton on Linux, and whether UDP performance is better on Linux.
   - Develop a server management system based on Go+Vue?
