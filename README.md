@@ -17,6 +17,7 @@ The Docker container will force update steamcmd and ARK server files and downloa
 
 ## Known Issues
   - When running the server with GE-Proton, server output information cannot be viewed in the container logs
+  - The Mods download/update process is not perfect, there may be download failures. It needs optimization, currently it is recommended to enable Mods update before server start
 
 ## Future Plans
   - Test performance differences between running the server directly on Windows versus using GE-Proton on Linux, and whether UDP performance is better on Linux.
