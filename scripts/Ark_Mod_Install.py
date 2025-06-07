@@ -7,7 +7,7 @@ import struct
 from collections import OrderedDict
 from time import gmtime, strftime
 
-debug = True
+debug = False
 
 time = strftime("%Y-%m-%d--%H-%M-%S", gmtime())
 log_dir = os.path.join(os.getcwd(), str(time))
