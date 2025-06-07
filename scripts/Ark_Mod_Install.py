@@ -24,7 +24,7 @@ if debug:
 def log(mes, id=1):
     if debug:
         if id == 1:
-            print("log message: " + mes)
+            print("mod install: " + mes)
         else:
             print(mes)
             log_file = os.path.join(log_dir, id)
@@ -46,22 +46,22 @@ class ArkModInstaller:
 
     def install_mod(self):
         """
-        安装单个mod
+        Install a single mod
         """
-        log(f"[+] 开始安装mod {self.modid}")
+        log(f"[+] Starting to install mod {self.modid}")
 
         if not self.extract_mod():
-            log(f"[x] mod {self.modid} 安装失败")
+            log(f"[x] Failed to install mod {self.modid}")
             return False
 
-        log(f"[+] mod {self.modid} 安装成功")
+        log(f"[+] Successfully installed mod {self.modid}")
         return True
 
     def extract_mod(self):
         """
-        解压.z文件并安装mod
+        Extract .z files and install mod
         """
-        log("[+] 解压.z文件")
+        log("[+] Extracting .z files")
 
         def f(file, name, curdir):
             src = os.path.join(curdir, file)
@@ -94,7 +94,7 @@ class ArkModInstaller:
             arkit.SignatureUnpackException,
             arkit.CorruptUnpackException,
         ) as e:
-            log("[x] 解压.z文件失败")
+            log("[x] Failed to extract .z files")
             log(str(e))
             return False
 
@@ -102,13 +102,13 @@ class ArkModInstaller:
             if self.move_mod():
                 return True
             else:
-                log("移动mod文件失败")
+                log("Failed to move mod files")
                 return False
         return False
 
     def move_mod(self):
         """
-        将mod从SteamCMD下载位置移动到ARK服务器
+        Move mod from SteamCMD download location to ARK server
         """
         ark_mod_folder = os.path.join(
             self.install_dir, "ShooterGame", "Content", "Mods"
@@ -125,17 +125,17 @@ class ArkModInstaller:
         )
 
         if not os.path.isdir(ark_mod_folder):
-            log("[+] 创建目录: " + ark_mod_folder)
+            log("[+] Creating directory: " + ark_mod_folder)
             os.mkdir(ark_mod_folder)
 
         if os.path.isdir(output_dir):
             shutil.rmtree(output_dir)
 
-        log("[+] 移动mod文件到: " + output_dir)
+        log("[+] Moving mod files to: " + output_dir)
         shutil.copytree(source_dir, output_dir)
 
         if self.modname:
-            log("创建mod名称文件")
+            log("Creating mod name file")
             self.create_mod_name_txt(ark_mod_folder)
 
         return True
@@ -146,12 +146,12 @@ class ArkModInstaller:
 
     def create_mod_file(self):
         """
-        创建.mod文件
+        Create .mod file
         """
         if not self.parse_base_info() or not self.parse_meta_data():
             return False
 
-        log("[+] 写入.mod文件")
+        log("[+] Writing .mod file")
         mod_file_path = os.path.join(
             self.install_dir, "ShooterGame", "Content", "Mods", f"{self.modid}.mod"
         )
@@ -209,9 +209,9 @@ class ArkModInstaller:
 
     def parse_meta_data(self):
         """
-        解析modmeta.info文件
+        Parse modmeta.info file
         """
-        log("[+] 从modmeta.info收集mod元数据")
+        log("[+] Collecting mod metadata from modmeta.info")
 
         mod_meta = os.path.join(
             self.working_dir,
@@ -224,7 +224,7 @@ class ArkModInstaller:
             r"modmeta.info",
         )
         if not os.path.isfile(mod_meta):
-            log("[x] 未找到modmeta.info文件")
+            log("[x] modmeta.info file not found")
             return False
 
         with open(mod_meta, "rb") as f:
@@ -261,9 +261,9 @@ class ArkModInstaller:
 
     def parse_base_info(self):
         """
-        解析mod.info文件
+        Parse mod.info file
         """
-        log("[+] 从mod.info收集mod详情")
+        log("[+] Collecting mod details from mod.info")
 
         mod_info = os.path.join(
             self.working_dir,
@@ -277,7 +277,7 @@ class ArkModInstaller:
         )
 
         if not os.path.isfile(mod_info):
-            log("[x] 未找到mod.info文件")
+            log("[x] mod.info file not found")
             return False
 
         with open(mod_info, "rb") as f:
@@ -293,22 +293,24 @@ class ArkModInstaller:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ARK Mod安装工具")
+    parser = argparse.ArgumentParser(description="ARK Mod Installer")
     parser.add_argument(
-        "--workingdir", required=True, dest="workingdir", help="游戏服务器目录"
+        "--workingdir", required=True, dest="workingdir", help="Game server directory"
     )
-    parser.add_argument("--modid", required=True, dest="modid", help="要安装的mod ID")
+    parser.add_argument(
+        "--modid", required=True, dest="modid", help="Mod ID to install"
+    )
     parser.add_argument(
         "--namefile",
         default=None,
         action="store_true",
         dest="modname",
-        help="创建包含mod文本名称的.name文件",
+        help="Create .name file containing mod text name",
     )
     parser.add_argument(
         "--installdir",
         dest="installdir",
-        help="mod安装目录，如果不指定则使用workingdir",
+        help="Mod installation directory, if not specified will use workingdir",
     )
     args = parser.parse_args()
 

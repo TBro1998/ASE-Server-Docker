@@ -3,21 +3,20 @@
 [中文文档](README-Zh.md)  
 
 This is a Docker-based ARK: Survival Evolved game server that uses GE-Proton to run the Windows version of the ARK server, with ArkApi support.  
-It includes the latest server files and ArkApi files at build time.  
-The Docker container will force update steamcmd and ARK server files and download Mods during creation.
+It includes the latest server files and ArkApi files at build time.
 
 ## Inspiration and Code Sources
 [Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server)
 [Ark_Mod_Downloader_v2](https://github.com/CobraColin/Ark_Mod_Downloader_v2)
 
 ## Disclaimer
+  - *Compared to running directly on Windows, it will occupy more disk space.
   - Since we're using GE-Proton (based on Wine) to simulate Windows system APIs on Linux to run the Windows version of the game server, memory usage might be slightly higher.
   - Including the latest server files has its pros and cons. While it saves download time during initial deployment for multi-server setups, we may release a Docker image without server files in the future based on needs.
-  - Compared to running directly on Windows, it will occupy more disk space.
 
 ## Known Issues
   - When running the server with GE-Proton, server output information cannot be viewed in the container logs
-  - The Mods download/update process is not perfect, there may be download failures. It needs optimization, currently it is recommended to enable Mods update before server start
+  - The Mods download/update process is not perfect
 
 ## Future Plans
   - Test performance differences between running the server directly on Windows versus using GE-Proton on Linux, and whether UDP performance is better on Linux.
@@ -28,6 +27,8 @@ The Docker container will force update steamcmd and ARK server files and downloa
 ### Configuring server.cfg
 
 The server parameters are not currently defined using environment variables in `docker-compose.yml` because modifying environment variables requires rebuilding the container.  
+If you need to use Mods, you need to configure 'MODIDS' and enable the option to update Mods before starting 'UPDATE_MODS=true'.  
+If you need to expose the RCON port, add the port mapping in `docker-compose.yml`.  
 The `server.cfg` file in the project root directory contains all configurable environment variables, and changes can be applied by restarting the container without rebuilding:
 
 ```
@@ -76,7 +77,6 @@ To save game data, it is recommended to mount the following volumes:
 ### Using Docker Compose
 
 The project includes a `docker-compose.yml` file and a `server.cfg` file.  
-If you need to expose the RCON port, add the port mapping in `docker-compose.yml`.  
 Using Docker Compose makes it easier to manage the container:
 
 ```bash

@@ -1,22 +1,20 @@
 # Docker ARK 服务器
 
 这是一个基于Docker的ARK: Survival Evolved游戏服务器，使用GE-Proton运行Windows版ARK服务器，支持ArkApi。  
-包含了构建时最新的服务端文件和ArkApi文件。    
-Docker容器创建时会强制更新steamcmd和ARK服务器文件和下载Mods。
-
+包含了构建时最新的服务端文件和ArkApi文件。
 
 ## 灵感及部分代码来源：
 [Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server)
 [Ark_Mod_Downloader_v2](https://github.com/CobraColin/Ark_Mod_Downloader_v2)
 
 ## 声明
+  - *相比直接在Windows上运行的方式会多占用更多的磁盘空间。
   - 因为是在Linux上使用GE-Proton(基于Wine)模拟Windows系统的API运行Windows端的游戏服务器，所以内存占用可能会稍微增加。
   - 包含最新的服务端文件这种做法有利有弊，如果是开多通服务器会在一开始的部署阶段省去下载的等待时间，后续根据需要可以出一套无服务端文件的Docker镜像。
-  - 相比直接在Windows上运行会多占用更多的磁盘空间。
 
 ## 已知问题
   - 使用GE-Proto运行服务端，无法在容器的日志中查看服务端的输出信息
-  - Mods的下载/更新流程不够完善，存在下载失败的情况，还需要优化，目前建议开启启动前更新Mods
+  - Mods的下载安装流程不够完善
 
 ## 未来计划
   - 测试在Windows直接运行服务器跟使用GE-Proton在linux上运行的性能差异，以及在linux上UDP性能是否会更优秀。
@@ -27,6 +25,8 @@ Docker容器创建时会强制更新steamcmd和ARK服务器文件和下载Mods�
 ### 配置server.cfg文件
 
 服务器的参数目前不在`docker-compose.yml`中使用环境变量定义，因为修改环境变量设置需要重建容器。  
+如果要使用Mods，需要配置'MODIDS'，并开启启动前更新Mods选项'UPDATE_MODS=true'  
+如果需要开放RCON端口，在`docker-compose.yml`中添加端口映射即可。  
 使用项目根目录下的`server.cfg`文件包含了所有可配置的环境变量，无需重建容器，重启容器即可生效：
 
 ```
@@ -77,7 +77,6 @@ SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGri
 ### 使用Docker Compose 运行容器
 
 项目包含了`docker-compose.yml`文件和`server.cfg`文件。  
-如果需要开放RCON端口，在`docker-compose.yml`中添加端口映射即可。  
 使用Docker Compose更方便地管理容器：
 
 

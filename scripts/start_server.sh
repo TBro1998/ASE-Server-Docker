@@ -3,57 +3,50 @@
 echo "###################################################"
 echo "##### Start Ark Survival Evolved Server With ArkApi"
 echo "##### $(date)"
-echo "##### 公网IP [$(curl -s https://ifconfig.me)]"
+echo "##### Public IP [$(curl -s https://ifconfig.me)]"
 echo "###################################################"
 
-# 创建mod下载目录
+# Create mod download directory
 MOD_DOWNLOAD_DIR="/home/steam/download"
 
-# 读取配置文件
+# Read configuration file
 if [ -f "server.cfg" ]; then
-    echo " [i] 读取配置"
+    echo " [i] Reading configuration"
     cat server.cfg
     source server.cfg
 fi
 
-# 检查是否是首次运行
-if [ -f "first_run.sh" ]; then
-    echo " [i] 检测到首次运行脚本，执行初始化..."
-    ./first_run.sh
-    echo " [i] 首次运行初始化完成，已删除初始化脚本"
-fi
-
 if [ "${UPDATE_SERVER}" = "true" ]; then
-    # 更新游戏服务器
-    echo " [*] 更新ARK服务器"
+    # Update Steam client
+    echo " [*] Updating Steam client"
+    steamcmd +app_update +quit
+    # Update game server
+    echo " [*] Updating ARK server"
     steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $STEAM_ID validate +quit 
-    echo " [i] ARK服务器更新完成"
+    echo " [i] ARK server update completed"
 fi
 
 if [ "${UPDATE_MODS}" = "true" ] && [ "${MODIDS}" != "" ]; then
-   echo " [*] 开始下载和安装mod"
-    # 计算mod总数
+   echo " [*] Starting mod download and installation"
+    # Calculate total number of mods
     total_mods=$(echo $MODIDS | tr ',' '\n' | wc -l)
     current_mod=0
     
-    # 为每个mod创建下载目录
+    # Create download directory for each mod
     for modid in $(echo $MODIDS | tr ',' ' '); do
+        echo "--------------------------------"
         current_mod=$((current_mod + 1))
         mkdir -p $MOD_DOWNLOAD_DIR/$modid
-        echo " [*] 下载mod: $modid (${current_mod}/${total_mods})"
+        echo " [*] Downloading mod: $modid (${current_mod}/${total_mods})"
         steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $MOD_DOWNLOAD_DIR/$modid +login anonymous +workshop_download_item 346110 $modid +quit
         
-        echo " [*] 安装mod: $modid (${current_mod}/${total_mods})"
+        echo " [*] Installing mod: $modid (${current_mod}/${total_mods})"
         python3 Ark_Mod_Install.py --workingdir $MOD_DOWNLOAD_DIR/$modid --modid $modid --namefile --installdir $INSTALL_DIR
+        echo "--------------------------------"
     done
 else
-    echo " [i] 跳过mod更新"
+    echo " [i] Skipping mod update"
 fi
-
-# 显示配置信息
-echo "最大玩家数量: ${MAX_PLAYERS:-70}"
-echo "进服密码: ${SERVER_PASSWORD:-}"
-echo "管理员密码: ${ADMIN_PASSWORD:-}"
 
 # Start server with proton
 SERVER_CMD="$PROTON run ShooterGameServer.exe \
@@ -62,8 +55,8 @@ SERVER_CMD="$PROTON run ShooterGameServer.exe \
 
 #  -NoBattlEye -servergamelog -ServerAllowAnsel -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
 
-# 启动ARK服务器
-echo " [*] 启动ARK服务器..."
+# Start ARK server
+echo " [*] Starting ARK server..."
 cd $INSTALL_DIR/ShooterGame/Binaries/Win64 
 export PROTON_LOG=1
 # Start the server
