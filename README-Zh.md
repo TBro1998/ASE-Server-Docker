@@ -26,7 +26,8 @@ Docker容器创建时会强制更新steamcmd和ARK服务器文件和下载Mods�
 
 ### 配置server.cfg文件
 
-项目根目录下的`server.cfg`文件包含了所有可配置的环境变量：
+服务器的参数目前不在`docker-compose.yml`中使用环境变量定义，因为修改环境变量设置需要重建容器。  
+使用项目根目录下的`server.cfg`文件包含了所有可配置的环境变量，无需重建容器，重启容器即可生效：
 
 ```
 # 地图
@@ -75,7 +76,10 @@ SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGri
 
 ### 使用Docker Compose 运行容器
 
-项目包含了`docker-compose.yml`文件和`server.cfg`文件，可以使用Docker Compose更方便地管理容器：
+项目包含了`docker-compose.yml`文件和`server.cfg`文件。  
+如果需要开放RCON端口，在`docker-compose.yml`中添加端口映射即可。  
+使用Docker Compose更方便地管理容器：
+
 
 ```bash
 # 构建并启动容器

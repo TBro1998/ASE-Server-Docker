@@ -27,7 +27,8 @@ The Docker container will force update steamcmd and ARK server files and downloa
 
 ### Configuring server.cfg
 
-The `server.cfg` file in the project root directory contains all configurable environment variables:
+The server parameters are not currently defined using environment variables in `docker-compose.yml` because modifying environment variables requires rebuilding the container.  
+The `server.cfg` file in the project root directory contains all configurable environment variables, and changes can be applied by restarting the container without rebuilding:
 
 ```
 # Map
@@ -74,7 +75,9 @@ To save game data, it is recommended to mount the following volumes:
 
 ### Using Docker Compose
 
-The project includes a `docker-compose.yml` file and a `server.cfg` file, making it easier to manage the container using Docker Compose:
+The project includes a `docker-compose.yml` file and a `server.cfg` file.  
+If you need to expose the RCON port, add the port mapping in `docker-compose.yml`.  
+Using Docker Compose makes it easier to manage the container:
 
 ```bash
 # Build and start the container

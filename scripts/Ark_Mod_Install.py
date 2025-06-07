@@ -68,7 +68,7 @@ class ArkModInstaller:
             dst = os.path.join(curdir, name)
             uncompressed = os.path.join(curdir, file + ".uncompressed_size")
             arkit.unpack(src, dst)
-            log("[+] 已解压 " + file)
+            # log("[+] 已解压 " + file)
             os.remove(src)
             if os.path.isfile(uncompressed):
                 os.remove(uncompressed)
