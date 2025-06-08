@@ -60,7 +60,7 @@ echo " [*] Starting ARK server..."
 cd $INSTALL_DIR/ShooterGame/Binaries/Win64 
 export PROTON_LOG=1
 # Start the server
-$SERVER_CMD &
+$SERVER_CMD
 SERVER_PID=$!
 
 # Capture logs
