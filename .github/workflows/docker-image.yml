@@ -19,10 +19,10 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Build the Docker image
-      run: cd ase-server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd
+      run: cd ASE-Server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd
     
     - name: Push Docker images
-      run: cd ase-server-base/steamcmd && docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd
+      run:  docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd
 
   # 最终镜像
   ASE-Server:
