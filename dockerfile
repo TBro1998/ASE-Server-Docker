@@ -1,4 +1,4 @@
-FROM tbro98/arkserver-base:steamcmd
+FROM tbro98/ASE-Server-base:steamcmd
 
 ENV STEAM_PATH=${HOME}/.steam/steam
 ENV PROTON_VERSION=GE-Proton10-4

@@ -6,63 +6,27 @@ on:
       - 'v*'
 
 jobs:
-  # # 只包含方舟服务器的基础镜像-ubuntu-2204
-  # arkserver-base-ubuntu-2204:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
+  # 只包含方舟服务器的基础镜像-steamcmd
+  ASE-Server-base:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
     
-  #   - name: Login to DockerHub
-  #     uses: docker/login-action@v3
-  #     with:
-  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-  #   - name: Build the Docker image
-  #     run: cd arkserver-base/ubuntu-2204 && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/arkserver-base:ubuntu-2204
+    - name: Build the Docker image
+      run: cd ASE-Server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ASE-Server-base:steamcmd
     
-  #   - name: Push Docker images
-  #     run: cd arkserver-base/ubuntu-2204 && docker push ${{ secrets.DOCKERHUB_USERNAME }}/arkserver-base:ubuntu-2204
-
-  # # 只包含方舟服务器的基础镜像-ubuntu-latest
-  # arkserver-base-ubuntu-latest:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-    
-  #   - name: Login to DockerHub
-  #     uses: docker/login-action@v3
-  #     with:
-  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
-  #   - name: Build the Docker image
-  #     run: cd arkserver-base/ubuntu-latest && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/arkserver-base:ubuntu-latest
-    
-  #   - name: Push Docker images
-  #     run: cd arkserver-base/ubuntu-latest && docker push ${{ secrets.DOCKERHUB_USERNAME }}/arkserver-base:ubuntu-latest
-  
-  
-  # # 只包含方舟服务器的基础镜像-steamcmd
-  # arkserver-base-steamcmd:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-    
-  #   - name: Login to DockerHub
-  #     uses: docker/login-action@v3
-  #     with:
-  #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
-  #   - name: Build the Docker image
-  #     run: cd arkserver-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/arkserver-base:steamcmd
-    
-  #   - name: Push Docker images
-  #     run: cd arkserver-base/steamcmd && docker push ${{ secrets.DOCKERHUB_USERNAME }}/arkserver-base:steamcmd
+    - name: Push Docker images
+      run: cd ASE-Server-base/steamcmd && docker push ${{ secrets.DOCKERHUB_USERNAME }}/ASE-Server-base:steamcmd
 
   # 最终镜像
-  arkserver:
+  ASE-Server:
+    needs: ASE-Server-base
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -85,10 +49,10 @@ jobs:
     - name: Build the Docker image
       run: |
         TAG=${GITHUB_REF#refs/tags/}
-        docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/arkserver:latest -t ${{ secrets.DOCKERHUB_USERNAME }}/arkserver:$TAG
+        docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ASE-Server:latest -t ${{ secrets.DOCKERHUB_USERNAME }}/ASE-Server:$TAG
     
     - name: Push Docker images
       run: |
         TAG=${GITHUB_REF#refs/tags/}
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/arkserver:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/arkserver:$TAG
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ASE-Server:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ASE-Server:$TAG
