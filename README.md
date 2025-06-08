@@ -20,6 +20,7 @@ It includes the latest server files and ArkApi files at build time.
 
 ## Future Plans
 - Test performance differences between running the server directly on Windows versus using GE-Proton on Linux, and whether UDP performance is better on Linux
+- Would it be more suitable to use [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) to replace GE-Proton for running ASE server?
 - Develop a server management system based on Go+Vue?
 
 ## Usage

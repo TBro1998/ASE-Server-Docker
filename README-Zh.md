@@ -17,8 +17,9 @@
 - Mods的下载安装流程不够完善
 
 ## 未来计划
-- 测试在Windows直接运行服务器跟使用GE-Proton在linux上运行的性能差异，以及在linux上UDP性能是否会更优秀
-- 开发一套基于Go+Vue的服务器管理系统？
+- 测试在Windows直接运行服务器跟使用GE-Proton在linux上运行的性能差异，以及在linux上UDP性能是否会更优秀?
+- 使用(umu-launcher)[https://github.com/Open-Wine-Components/umu-launcher]来替代GE-Proton运行ASE服务器是否会更合适?
+- 开发一套基于Go+Vue的服务器管理系统?
 
 ## 使用方法
 
