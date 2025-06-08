@@ -57,18 +57,10 @@ SERVER_CMD="$PROTON run ShooterGameServer.exe \
 
 # Start ARK server
 echo " [*] Starting ARK server..."
-cd $INSTALL_DIR/ShooterGame/Binaries/Win64 
-export PROTON_LOG=1
+cd $INSTALL_DIR/ShooterGame/Binaries/Win64
+
 # Start the server
-$SERVER_CMD
-SERVER_PID=$!
+$SERVER_CMD 
 
-# Capture logs
-# tail -f "${INSTALL_DIR}/ShooterGame/Saved/Logs/server.log" &
-# tail -f "${INSTALL_DIR}/ShooterGame/Binaries/Win64/logs/server.log" &
-
-# Monitor server process
-wait $SERVER_PID
-exit $?
 # 保持容器运行
 # tail -f /dev/null
