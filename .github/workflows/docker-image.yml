@@ -1,4 +1,4 @@
-name: ARK Server Docker Image CI
+name: ASE Server Docker CI
 
 on:
   push:

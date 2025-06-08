@@ -5,34 +5,10 @@ import argparse
 import shutil
 import struct
 from collections import OrderedDict
-from time import gmtime, strftime
-
-debug = False
-
-time = strftime("%Y-%m-%d--%H-%M-%S", gmtime())
-log_dir = os.path.join(os.getcwd(), str(time))
 
 
-def create_log_dir():
-    os.makedirs(log_dir)
-
-
-if debug:
-    create_log_dir()
-
-
-def log(mes, id=1):
-    if debug:
-        if id == 1:
-            print("mod install: " + mes)
-        else:
-            print(mes)
-            log_file = os.path.join(log_dir, id)
-            if not os.path.isfile(log_file):
-                open(log_file, "x")
-            with open(log_file, "a") as file:
-                if file.writable():
-                    file.write(mes)
+def log(mes):
+    print("mod install: " + mes)
 
 
 class ArkModInstaller:
