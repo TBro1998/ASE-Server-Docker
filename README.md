@@ -38,22 +38,14 @@ If you need to expose the RCON port, add the port mapping in `docker-compose.yml
 The `server.cfg` file in the project root directory contains all configurable environment variables, and changes can be applied by restarting the container without rebuilding:
 
 ```ini
-# Map
-MAP=TheIsland
-# Server join password
-SERVER_PASSWORD=
-# Server admin password
-ADMIN_PASSWORD=Admin
-# Maximum players
-MAX_PLAYERS=70
-# Update server before starting, set to true to enable
-UPDATE_SERVER=false
-# Update Mods before starting, set to true to enable
-UPDATE_MODS=false
-# Mods list, comma separated
-MODIDS="1,2,3"
-# Server startup arguments
-SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
+PORT=7777 # Game client port
+QUERYPORT=27015 # Query port for Steam's server browser
+MAP=TheIsland # Map Name
+MAX_PLAYERS=70 # Maximum players
+UPDATE_SERVER=false # Update server before starting, set to true to enable
+UPDATE_MODS=false # Update Mods before starting, set to true to enable
+MODIDS="1,2,3" # Mods list, comma separated
+SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" # Server startup arguments
 ```
 
 Simply edit the values in the `server.cfg` file and restart the container to apply the new configuration.

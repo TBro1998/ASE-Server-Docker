@@ -30,28 +30,20 @@ cd docker
 
 ### 2. 配置server.cfg文件
 
-服务器的参数目前不在`docker-compose.yml`中使用环境变量定义，因为修改环境变量设置需要重建容器。  
-如果要使用Mods，需要配置'MODIDS'，并开启启动前更新Mods选项'UPDATE_MODS=true'  
-如果需要开放RCON端口，在`docker-compose.yml`中添加端口映射即可。  
-使用项目根目录下的`server.cfg`文件包含了所有可配置的环境变量，无需重建容器，重启容器即可生效：
+服务器的参数目前不在 docker-compose.yml 中使用环境变量定义，因为修改环境变量设置需要重建容器。  
+如果要使用Mods，需要配置 'MODIDS' ，并开启启动前更新Mods选项'UPDATE_MODS=true'  
+如果需要开放RCON端口，在 docker-compose.yml 中添加端口映射即可。  
+使用项目根目录下的 server.cfg 文件包含了所有可配置的环境变量，无需重建容器，重启容器即可生效：
 
 ```ini
-# 地图
-MAP=TheIsland
-# 服务器进入密码
-SERVER_PASSWORD=
-# 服务器管理员密码
-ADMIN_PASSWORD=Admin
-# 最大玩家数
-MAX_PLAYERS=70
-# 启动前更新服务器，设置为 true 开启
-UPDATE_SERVER=false
-# 启动前更新Mods，设置为 true 开启
-UPDATE_MODS=false
-# Mods 列表，逗号分隔
-MODIDS="1,2,3"
-# 服务器启动参数
-SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
+PORT=7777 # 游戏端口
+QUERYPORT=27015 # 查询端口
+MAP=TheIsland # 地图
+MAX_PLAYERS=70 # 最大玩家数
+UPDATE_SERVER=false # 启动前更新服务器，设置为 true 开启
+UPDATE_MODS=false # 启动前更新Mods，设置为 true 开启
+MODIDS="1,2,3" # Mods 列表，逗号分隔
+SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" # 服务器启动参数
 ```
 
 只需编辑`server.cfg`文件中的值，然后重新启动容器即可应用新的配置。
@@ -83,7 +75,7 @@ SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGri
 
 ### 5. 使用Docker Compose 运行容器
 
-项目包含了`docker-compose.yml`文件和`server.cfg`文件。  
+项目包含了 docker-compose.yml 文件和 server.cfg 文件。  
 使用Docker Compose更方便地管理容器：
 
 ```bash
