@@ -30,25 +30,25 @@ It includes the latest server files and ArkApi files at build time.
 cd docker
 ```
 
-### 2. Configure server.cfg file
+### 2. Configure server parameters
 
-The server parameters are not currently defined using environment variables in `docker-compose.yml` because modifying environment variables requires rebuilding the container.  
-If you need to use Mods, you need to configure 'MODIDS' and enable the option to update Mods before starting 'UPDATE_MODS=true'.  
-If you need to expose the RCON port, add the port mapping in `docker-compose.yml`.  
-The `server.cfg` file in the project root directory contains all configurable environment variables, and changes can be applied by restarting the container without rebuilding:
+Server parameters are configured through environment variables in the `docker-compose.yml` file. You can modify the following parameters:
 
-```ini
-PORT=7777 # Game client port
-QUERYPORT=27015 # Query port for Steam's server browser
-MAP=TheIsland # Map Name
-MAX_PLAYERS=70 # Maximum players
-UPDATE_SERVER=false # Update server before starting, set to true to enable
-UPDATE_MODS=false # Update Mods before starting, set to true to enable
-MODIDS="1,2,3" # Mods list, comma separated
-SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" # Server startup arguments
+- `GameModIds`: Comma-separated list of mod IDs to install
+- `SERVER_ARGS`: Server startup arguments including map, ports, and other settings
+
+Example configuration in `docker-compose.yml`:
+```yaml
+environment:
+  - GameModIds=895711211,669673294,1136125765
+  - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
 ```
 
-Simply edit the values in the `server.cfg` file and restart the container to apply the new configuration.
+To apply configuration changes, restart the container:
+```bash
+docker-compose down
+docker-compose up -d
+```
 
 ### 3. Available Maps
 
@@ -70,14 +70,13 @@ To save game data, it is recommended to mount the following volumes:
 
 | Local Path | Container Path | Description |
 |------------|----------------|-------------|
-| ./server.cfg | /home/steam/server.cfg | *Required, configuration file for server startup parameters |
 | ./Saved | /home/steam/arkserver/ShooterGame/Saved | Server save files, including Configs, Logs, SavedArks |
 | ./Plugins | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi plugin files location |
 | ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs | ArkApi log files |
 
 ### 5. Using Docker Compose
 
-The project includes a `docker-compose.yml` file and a `server.cfg` file.  
+The project includes a `docker-compose.yml` file with all necessary configuration.  
 Using Docker Compose makes it easier to manage the container:
 
 ```bash

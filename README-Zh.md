@@ -28,25 +28,25 @@
 cd docker
 ```
 
-### 2. 配置server.cfg文件
+### 2. 配置服务器参数
 
-服务器的参数目前不在 docker-compose.yml 中使用环境变量定义，因为修改环境变量设置需要重建容器。  
-如果要使用Mods，需要配置 'MODIDS' ，并开启启动前更新Mods选项'UPDATE_MODS=true'  
-如果需要开放RCON端口，在 docker-compose.yml 中添加端口映射即可。  
-使用项目根目录下的 server.cfg 文件包含了所有可配置的环境变量，无需重建容器，重启容器即可生效：
+服务器参数通过 `docker-compose.yml` 文件中的环境变量进行配置。您可以修改以下参数：
 
-```ini
-PORT=7777 # 游戏端口
-QUERYPORT=27015 # 查询端口
-MAP=TheIsland # 地图
-MAX_PLAYERS=70 # 最大玩家数
-UPDATE_SERVER=false # 启动前更新服务器，设置为 true 开启
-UPDATE_MODS=false # 启动前更新Mods，设置为 true 开启
-MODIDS="1,2,3" # Mods 列表，逗号分隔
-SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" # 服务器启动参数
+- `GameModIds`: 要安装的mod ID列表，用逗号分隔
+- `SERVER_ARGS`: 服务器启动参数，包括地图、端口和其他设置
+
+在 `docker-compose.yml` 中的配置示例：
+```yaml
+environment:
+  - GameModIds=895711211,669673294,1136125765
+  - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
 ```
 
-只需编辑`server.cfg`文件中的值，然后重新启动容器即可应用新的配置。
+要应用配置更改，请重启容器：
+```bash
+docker-compose down
+docker-compose up -d
+```
 
 ### 3. 可用地图
 
@@ -68,14 +68,13 @@ SERVER_ARGS="-NoBattlEye -servergamelog -structurememopts -UseStructureStasisGri
 
 | 本地路径 | 容器路径 | 说明 |
 |---------|---------|------|
-| ./server.cfg | /home/steam/server.cfg | *必须，配置服务器启动参数的文件 |
 | ./Saved | /home/steam/arkserver/ShooterGame/Saved | 服务器保存文件，包含Configs、Logs、SavedArks |
 | ./Plugins | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi 插件文件存放位置 |
 | ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs | ArkApi 的日志文件 |
 
 ### 5. 使用Docker Compose 运行容器
 
-项目包含了 docker-compose.yml 文件和 server.cfg 文件。  
+项目包含了 docker-compose.yml 文件，包含所有必要的配置。  
 使用Docker Compose更方便地管理容器：
 
 ```bash

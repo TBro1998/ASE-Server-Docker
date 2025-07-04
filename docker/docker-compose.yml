@@ -10,13 +10,16 @@ services:
       - "7778:7778/tcp"
       - "27015:27015/udp"
       - "27015:27015/tcp"
+      - "32330:32330/udp"
+      - "32330:32330/tcp"
     environment:
       - TZ=Asia/Shanghai
+      - GameModIds=895711211,669673294,1136125765,554678442,926028694,676288311,876038468,566885854
+      - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765,554678442,926028694,676288311,876038468,566885854 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
     volumes:
       - ./Saved:/home/steam/arkserver/ShooterGame/Saved
       - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
       - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
-      - ./server.cfg:/home/steam/server.cfg
     # privileged: true
     # tty: true
     # stdin_open: true 
