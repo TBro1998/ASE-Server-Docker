@@ -1,0 +1,25 @@
+name: ASE Server Base Docker CI
+
+on:
+  push:
+    tags:
+      - 'base-*'
+
+jobs:
+  # 只包含方舟服务器的基础镜像-steamcmd
+  ASE-Server-base:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build the Docker image
+      run: cd ASE-Server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd
+    
+    - name: Push Docker images
+      run:  docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd 
