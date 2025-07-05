@@ -28,7 +28,6 @@ jobs:
 
   # 最终镜像
   ASE-Server:
-    needs: ASE-Server-base
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
