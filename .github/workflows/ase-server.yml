@@ -2,8 +2,8 @@ name: ASE Server Docker CI
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - wine
 
 jobs:
   # 最终镜像
@@ -29,10 +29,8 @@ jobs:
     
     - name: Build the Docker image
       run: |
-        TAG=${GITHUB_REF#refs/tags/}
-        docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG
+        docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:wine
     
     - name: Push Docker images
       run: |
-        TAG=${GITHUB_REF#refs/tags/}
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG 
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:wine 
