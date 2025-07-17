@@ -50,8 +50,8 @@ else
     echo " [i] Skipping initial setup - not first startup"
 fi
 
-# Start server with proton
-SERVER_CMD="$PROTON run ShooterGameServer.exe \
+# Start server with wine
+SERVER_CMD="wine ShooterGameServer.exe \
   ${SERVER_ARGS}"
 
 #  -NoBattlEye -servergamelog -ServerAllowAnsel -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
