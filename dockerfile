@@ -1,42 +1,57 @@
 FROM tbro98/ase-server-base:steamcmd
+# Build information
+LABEL "description"="Run Ark Survival Evolved Server With ArkApi"
+LABEL "maintainer"="tbro98 <tbro5201314@gmail.com>"
 
-ENV STEAM_PATH=${HOME}/.steam/steam
-ENV PROTON_VERSION=GE-Proton10-4
-ENV STEAM_COMPAT_CLIENT_INSTALL_PATH=${STEAM_PATH}
-ENV STEAM_COMPAT_DATA_PATH=${STEAM_PATH}/steamapps/compatdata/${STEAM_ID}
-ENV PROTON=${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION}/proton
-ENV WINEDLLOVERRIDES="version=n,b;vcrun2019=n,b"
+ENV PROTON_VERSION="GE-Proton10-15"
+# 切换到root用户
+USER root
 
-RUN dpkg --add-architecture i386 \
-    && apt-get update \
-    && apt-get install -y \
+# 添加i386架构支持并安装所有依赖
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
     vim \
-    wget python3 \
-    libfontconfig1 libfontconfig1:i386 libfreetype6 libfreetype6:i386 \
-    dbus curl cabextract winbind \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    wget curl tar ca-certificates gnupg2 \
+    lib32gcc-s1 lib32stdc++6 libsdl2-2.0-0:i386 libc6:i386 \
+    git make python3 python3-pip scdoc cargo rustc pkg-config \
+    libssl-dev libdbus-1-dev libpython3-dev python3-dev \
+    jq unzip nano gzip iproute2 procps sudo dbus\
+    locales \
+    software-properties-common && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+    #&& \
+    # 创建machine-id文件
+    # mkdir -p /etc && \
+    # dbus-uuidgen > /etc/machine-id && \
+    # chmod 444 /etc/machine-id
 
-# Install Proton build from Glorious Eggroll
-RUN mkdir -p ${STEAM_PATH} \
-    && mkdir -p ${STEAM_PATH}/compatibilitytools.d/ \
-    && mkdir -p /root/.config/protonfixes \
-    && mkdir -p ${STEAM_PATH}/steamapps/compatdata/${STEAM_ID} \
-    && wget -q -O - \
-    https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz \
-    | tar -xz -C ${STEAM_PATH}/compatibilitytools.d/ \
-    && cp -r ${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION}/files/share/default_pfx ${STEAM_PATH}/steamapps/compatdata/${STEAM_ID} 
+    # 安装umu-launcher所需的Python依赖
+RUN pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib
 
-# Setup machine-id for Proton
-RUN set -ex; \
-    rm -f /etc/machine-id; \
-    dbus-uuidgen --ensure=/etc/machine-id; \
-    rm -f /var/lib/dbus/machine-id; \
-    dbus-uuidgen --ensure
+# 下载并安装umu-launcher
+RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
+    cd umu-launcher && \
+    ./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf umu-launcher
+
+
+# 下载Proton
+RUN mkdir -p /home/steam/.local/share/Steam/compatibilitytools.d && \
+    curl -sL "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz" -o proton.tar.gz && \
+    tar -xzf proton.tar.gz -C /home/steam/.local/share/Steam/compatibilitytools.d && \
+    rm proton.tar.gz
+
+# 切换到steam用户
+USER steam
+WORKDIR /home/steam
 
 COPY scripts/* /home/steam/
 COPY ArkApi_3.56/* /home/steam/arkserver/ShooterGame/Binaries/Win64/
 RUN chmod +x /home/steam/*.sh
 
-WORKDIR /home/steam
 ENTRYPOINT ["./start_server.sh"]

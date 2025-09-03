@@ -19,10 +19,15 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Build the Docker image
-      run: cd ASE-Server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        cd ASE-Server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:$TAG
     
     - name: Push Docker images
-      run:  docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd 
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:$TAG 
+        
     # 最终镜像
   ASE-Server:
     needs: ASE-Server-base

@@ -50,10 +50,6 @@ else
     echo " [i] Skipping initial setup - not first startup"
 fi
 
-# Start server with proton
-SERVER_CMD="$PROTON run ShooterGameServer.exe \
-  ${SERVER_ARGS}"
-
 #  -NoBattlEye -servergamelog -ServerAllowAnsel -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
 
 # Start ARK server
@@ -61,7 +57,9 @@ echo " [*] Starting ARK server..."
 cd $INSTALL_DIR/ShooterGame/Binaries/Win64
 
 # Start the server
-$SERVER_CMD 
+PROTONPATH=${PROTON_VERSION} \ 
+umu-run ShooterGameServer.exe \
+  ${SERVER_ARGS}
 
 # 保持容器运行
 # tail -f /dev/null
