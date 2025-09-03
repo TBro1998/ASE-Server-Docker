@@ -21,13 +21,13 @@ RUN dpkg --add-architecture i386 && \
     software-properties-common && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-    #&& \
-    # 创建machine-id文件
-    # mkdir -p /etc && \
-    # dbus-uuidgen > /etc/machine-id && \
-    # chmod 444 /etc/machine-id
+#&& \
+# 创建machine-id文件
+# mkdir -p /etc && \
+# dbus-uuidgen > /etc/machine-id && \
+# chmod 444 /etc/machine-id
 
-    # 安装umu-launcher所需的Python依赖
+# 安装umu-launcher所需的Python依赖
 RUN pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib
 
 # 下载并安装umu-launcher
@@ -46,12 +46,11 @@ RUN mkdir -p /home/steam/.local/share/Steam/compatibilitytools.d && \
     tar -xzf proton.tar.gz -C /home/steam/.local/share/Steam/compatibilitytools.d && \
     rm proton.tar.gz
 
-# 切换到steam用户
-USER steam
-WORKDIR /home/steam
-
 COPY scripts/* /home/steam/
 COPY ArkApi_3.56/* /home/steam/arkserver/ShooterGame/Binaries/Win64/
 RUN chmod +x /home/steam/*.sh
 
+# 切换到steam用户
+USER steam
+WORKDIR /home/steam
 ENTRYPOINT ["./start_server.sh"]
