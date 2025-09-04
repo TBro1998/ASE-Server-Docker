@@ -51,6 +51,6 @@ COPY ArkApi_3.56/* /home/steam/arkserver/ShooterGame/Binaries/Win64/
 RUN chmod +x /home/steam/*.sh
 
 # 切换到steam用户
-USER steam
+# USER steam
 WORKDIR /home/steam
 ENTRYPOINT ["./start_server.sh"]
