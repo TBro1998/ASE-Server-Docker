@@ -1,11 +1,11 @@
-FROM tbro98/ase-server-base:steamcmd
+FROM tbro98/ase-server-base:latest
 # Build information
 LABEL "description"="Run Ark Survival Evolved Server With ArkApi"
 LABEL "maintainer"="tbro98 <tbro5201314@gmail.com>"
 
 ENV PROTON_VERSION="GE-Proton10-15"
 # 切换到root用户
-# USER root
+USER root
 
 # 添加i386架构支持并安装所有依赖
 RUN dpkg --add-architecture i386 && \
@@ -51,6 +51,6 @@ COPY ArkApi_3.56/* /home/steam/arkserver/ShooterGame/Binaries/Win64/
 RUN chmod +x /home/steam/*.sh
 
 # 切换到steam用户
-# USER steam
+USER steam
 WORKDIR /home/steam
 ENTRYPOINT ["./start_server.sh"]
