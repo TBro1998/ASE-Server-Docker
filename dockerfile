@@ -5,7 +5,7 @@ LABEL "maintainer"="tbro98 <tbro5201314@gmail.com>"
 
 ENV PROTON_VERSION="GE-Proton10-15"
 # 切换到root用户
-USER root
+# USER root
 
 # 添加i386架构支持并安装所有依赖
 RUN dpkg --add-architecture i386 && \
