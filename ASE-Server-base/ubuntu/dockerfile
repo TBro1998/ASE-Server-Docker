@@ -8,11 +8,11 @@ ENV STEAM_ID=376030 \
 
 # 安装必要的软件包
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
+    apt-get install -y  --no-install-recommends software-properties-common && \
     add-apt-repository multiverse && \
     dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y steamcmd && \
+    apt-get install -y --no-install-recommends steamcmd && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # 创建steam用户
