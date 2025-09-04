@@ -22,7 +22,9 @@ USER steam
 RUN mkdir -p ${STEAMCMD_PATH} && \
     cd ${STEAMCMD_PATH} && \
     curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - && \
-    chmod +x steamcmd.sh
+    chmod +x steamcmd.sh && \
+    # Create symlink for executable
+    ln -s ${STEAMCMD_PATH}/steamcmd.sh /usr/bin/steamcmd
 
 
 # 下载和安装ARK服务器
