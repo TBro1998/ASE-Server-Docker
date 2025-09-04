@@ -5,7 +5,9 @@ ENV STEAM_ID=376030 \
     STEAM_USER=anonymous \
     INSTALL_DIR='/home/steam/arkserver'
 
-
+# 创建steam用户
+RUN useradd -m -s /bin/bash steam 
+USER steam
 # 下载和安装ARK服务器
 RUN mkdir -p $INSTALL_DIR && \
     steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $STEAM_ID validate +quit && \
