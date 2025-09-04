@@ -11,9 +11,9 @@ RUN useradd -m -s /bin/bash steam && \
     chown -R steam:steam /home/steam
 
 USER steam
-WORKDIR /home/steam
 
 # 下载和安装ARK服务器
-RUN steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $STEAM_ID validate +quit && \
+RUN cd /home/steam && \
+    steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $STEAM_ID validate +quit && \
     # 清理SteamCMD缓存文件
     rm -rf /home/steam/Steam/logs/* /home/steam/Steam/appcache/* /home/steam/.steam/logs/* /home/steam/.steam/appcache/*
