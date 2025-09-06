@@ -67,7 +67,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Build the Base Docker image (preaquatica)
-      run: cd ASE-Server-base && docker build . --file dockerfile --build-arg USE_BETA=true -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd-preaquatica
+      run: cd ASE-Server-base && docker build . --file dockerfile.preaquatica -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd-preaquatica
     
     - name: Push Base Docker images (preaquatica)
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:steamcmd-preaquatica
