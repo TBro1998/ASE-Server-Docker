@@ -27,34 +27,13 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - name: Build the Docker image
+    - name: Build the Base Docker image
       run: cd ASE-Server-base/steamcmd && docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:latest
     
-    - name: Push Docker images
+    - name: Push Base Docker images
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server-base:latest 
         
-    # 最终镜像
-  ASE-Server:
-    needs: ASE-Server-base
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Free disk space
-      uses: jlumbroso/free-disk-space@main
-      with:
-        tool-cache: true
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        docker-images: true
-        swap-storage: true
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
+    # 最终镜像    
     - name: Build the Docker image
       run: |
         TAG=${GITHUB_REF#refs/tags/}
