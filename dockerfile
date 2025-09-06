@@ -46,7 +46,8 @@ RUN dpkg --add-architecture i386 && \
 USER ${USER}
 WORKDIR ${HOMEDIR}
 # 下载并安装umu-launcher
-RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
+RUN cd ${HOMEDIR} && \
+    git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
     cd umu-launcher && \
     ./configure.sh --user-install --use-system-pyzstd --use-system-urllib && \
     make && \
