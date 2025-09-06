@@ -48,7 +48,7 @@ WORKDIR ${HOMEDIR}
 # 下载并安装umu-launcher
 RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
     cd umu-launcher && \
-    ./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib && \
+    ./configure.sh --user-install --use-system-pyzstd --use-system-urllib && \
     make && \
     make install && \
     cd .. && \
