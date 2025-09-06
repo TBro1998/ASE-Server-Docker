@@ -58,6 +58,5 @@ RUN mkdir -p ${HOMEDIR}/.local/share/Steam/compatibilitytools.d && \
 
 COPY scripts/* ${HOMEDIR}/
 COPY ArkApi_3.56/* ${HOMEDIR}/arkserver/ShooterGame/Binaries/Win64/
-RUN chmod +x ${HOMEDIR}/*.sh
 
 ENTRYPOINT ["./start_server.sh"]
