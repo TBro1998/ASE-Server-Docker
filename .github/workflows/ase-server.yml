@@ -7,7 +7,7 @@ on:
 
 jobs:
   # 正式版最终镜像
-  ASE-Server-release:
+  ASE-Server:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG
 
   # 测试版最终镜像 (Beta Preaquatica)
-  ASE-Server-beta:
+  ASE-Server-Preaquatica:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
