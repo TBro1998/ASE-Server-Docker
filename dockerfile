@@ -12,8 +12,11 @@ ENV USER steam
 ENV HOMEDIR "/home/${USER}"
 ENV INSTALL_DIR="${HOMEDIR}/arkserver"
 
+COPY scripts/* ${HOMEDIR}/
+COPY ArkApi_3.56/* ${HOMEDIR}/arkserver/ShooterGame/Binaries/Win64/
 # Create user
-RUN useradd -d ${HOMEDIR} -m "${USER}"
+RUN useradd -d ${HOMEDIR} -m "${USER}" && \
+    chown -R ${USER}:${USER} ${HOMEDIR}
 
 
 # 添加i386架构支持并安装所有依赖
@@ -45,7 +48,7 @@ RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
     make && \
     make install && \
     cd .. && \
-    rm -rf umu-launcher
+    rm -rf umu-launcher 
 
 USER ${USER}
 WORKDIR ${HOMEDIR}
@@ -55,8 +58,5 @@ RUN mkdir -p ${HOMEDIR}/.local/share/Steam/compatibilitytools.d && \
     curl -sL "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz" -o proton.tar.gz && \
     tar -xzf proton.tar.gz -C ${HOMEDIR}/.local/share/Steam/compatibilitytools.d && \
     rm proton.tar.gz
-
-COPY scripts/* ${HOMEDIR}/
-COPY ArkApi_3.56/* ${HOMEDIR}/arkserver/ShooterGame/Binaries/Win64/
 
 ENTRYPOINT ["./start_server.sh"]
