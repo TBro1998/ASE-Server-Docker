@@ -5,6 +5,17 @@ LABEL "maintainer"="tbro98 <tbro5201314@gmail.com>"
 
 ENV PROTON_VERSION="GE-Proton10-15"
 
+# 设置ARK服务器的Steam ID和环境变量
+ENV STEAM_ID=376030
+ENV STEAM_USER=anonymous
+ENV USER steam
+ENV HOMEDIR "/home/${USER}"
+ENV INSTALL_DIR="${HOMEDIR}/arkserver"
+
+# Create user
+RUN useradd -d ${HOMEDIR} -m "${USER}"
+
+
 # 添加i386架构支持并安装所有依赖
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
@@ -27,7 +38,6 @@ RUN dpkg --add-architecture i386 && \
 
 # 安装umu-launcher所需的Python依赖
 RUN pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib
-
 # 下载并安装umu-launcher
 RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
     cd umu-launcher && \
@@ -37,16 +47,17 @@ RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
     cd .. && \
     rm -rf umu-launcher
 
+USER ${USER}
+WORKDIR ${HOMEDIR}
 
 # 下载Proton
-RUN mkdir -p /root/.local/share/Steam/compatibilitytools.d && \
+RUN mkdir -p ${HOMEDIR}/.local/share/Steam/compatibilitytools.d && \
     curl -sL "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz" -o proton.tar.gz && \
-    tar -xzf proton.tar.gz -C /root/.local/share/Steam/compatibilitytools.d && \
+    tar -xzf proton.tar.gz -C ${HOMEDIR}/.local/share/Steam/compatibilitytools.d && \
     rm proton.tar.gz
 
-COPY scripts/* /root/
-COPY ArkApi_3.56/* /root/arkserver/ShooterGame/Binaries/Win64/
-RUN chmod +x /root/*.sh
+COPY scripts/* ${HOMEDIR}/
+COPY ArkApi_3.56/* ${HOMEDIR}/arkserver/ShooterGame/Binaries/Win64/
+RUN chmod +x ${HOMEDIR}/*.sh
 
-WORKDIR /root
 ENTRYPOINT ["./start_server.sh"]

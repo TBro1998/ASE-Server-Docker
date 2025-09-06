@@ -1,10 +1,17 @@
 FROM steamcmd/steamcmd:latest
 
 # 设置ARK服务器的Steam ID和环境变量
-ENV STEAM_ID=376030 \
-    STEAM_USER=anonymous \
-    INSTALL_DIR='/root/arkserver'
+ENV STEAM_ID=376030
+ENV STEAM_USER=anonymous
+ENV USER steam
+ENV HOMEDIR "/home/${USER}"
+ENV INSTALL_DIR="${HOMEDIR}/arkserver"
 
+# Create user
+RUN useradd -d ${HOMEDIR} -m "${USER}"
+
+USER ${USER}
+WORKDIR ${HOMEDIR}
 
 # 下载和安装ARK服务器
 RUN mkdir -p $INSTALL_DIR && \

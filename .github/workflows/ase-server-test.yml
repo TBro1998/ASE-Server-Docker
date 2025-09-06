@@ -1,4 +1,4 @@
-name: ASE Server Base Docker CI
+name: ASE Server Test Docker CI
 
 on:
   push:
