@@ -1,4 +1,4 @@
-FROM tbro98/ase-server-base:latest
+FROM steamcmd/steamcmd:latest
 # Build information
 LABEL "description"="Run Ark Survival Evolved Server With ArkApi"
 LABEL "maintainer"="tbro98 <tbro5201314@gmail.com>"
