@@ -28,7 +28,22 @@
 cd docker
 ```
 
-### 2. 配置服务器参数
+### 2. 选择Docker镜像版本
+
+项目提供两个Docker镜像版本：
+
+- `tbro98/ase-server:latest` - 标准版本（海洋dlc更新后）
+- `tbro98/ase-server:latest-preaquatica` - Pre-Aquatica版本，海洋dlc更新前的版本
+
+如需使用preaquatica版本，请修改 `docker-compose.yml` 中的 `image` 行：
+```yaml
+# 从：
+image: tbro98/ase-server:latest
+# 改为：
+image: tbro98/ase-server:latest-preaquatica
+```
+
+### 3. 配置服务器参数
 
 服务器参数通过 `docker-compose.yml` 文件中的环境变量进行配置。您可以修改以下参数：
 
@@ -48,7 +63,7 @@ docker-compose down
 docker-compose up -d
 ```
 
-### 3. 可用地图
+### 4. 可用地图
 
 - TheIsland
 - TheCenter
@@ -62,17 +77,17 @@ docker-compose up -d
 - Genesis2
 - LostIsland
 
-### 4. 数据持久化
+### 5. 数据持久化
 
 为了保存游戏数据，建议挂载以下存储卷：
 
-| 本地路径 | 容器路径 | 说明 |
-|---------|---------|------|
-| ./Saved | /home/steam/arkserver/ShooterGame/Saved | 服务器保存文件，包含Configs、Logs、SavedArks |
-| ./Plugins | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi 插件文件存放位置 |
-| ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs | ArkApi 的日志文件 |
+| 本地路径     | 容器路径                                                        | 说明                                         |
+| ------------ | --------------------------------------------------------------- | -------------------------------------------- |
+| ./Saved      | /home/steam/arkserver/ShooterGame/Saved                         | 服务器保存文件，包含Configs、Logs、SavedArks |
+| ./Plugins    | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi 插件文件存放位置                      |
+| ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs           | ArkApi 的日志文件                            |
 
-### 5. 使用Docker Compose 运行容器
+### 6. 使用Docker Compose 运行容器
 
 项目包含了 docker-compose.yml 文件，包含所有必要的配置。  
 使用Docker Compose更方便地管理容器：

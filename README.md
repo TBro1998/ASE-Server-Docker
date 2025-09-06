@@ -30,7 +30,22 @@ It includes the latest server files and ArkApi files at build time.
 cd docker
 ```
 
-### 2. Configure server parameters
+### 2. Choose Docker Image Version
+
+The project provides two Docker image versions:
+
+- `tbro98/ase-server:latest` - Standard version (after aquatica DLC update)
+- `tbro98/ase-server:latest-preaquatica` - Pre-Aquatica version, before aquatica DLC update
+
+To use the preaquatica version, modify the `image` line in `docker-compose.yml`:
+```yaml
+# Change from:
+image: tbro98/ase-server:latest
+# To:
+image: tbro98/ase-server:latest-preaquatica
+```
+
+### 3. Configure server parameters
 
 Server parameters are configured through environment variables in the `docker-compose.yml` file. You can modify the following parameters:
 
@@ -50,7 +65,7 @@ docker-compose down
 docker-compose up -d
 ```
 
-### 3. Available Maps
+### 4. Available Maps
 
 - TheIsland
 - TheCenter
@@ -64,17 +79,17 @@ docker-compose up -d
 - Genesis2
 - LostIsland
 
-### 4. Data Persistence
+### 5. Data Persistence
 
 To save game data, it is recommended to mount the following volumes:
 
-| Local Path | Container Path | Description |
-|------------|----------------|-------------|
-| ./Saved | /home/steam/arkserver/ShooterGame/Saved | Server save files, including Configs, Logs, SavedArks |
-| ./Plugins | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi plugin files location |
-| ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs | ArkApi log files |
+| Local Path   | Container Path                                                  | Description                                           |
+| ------------ | --------------------------------------------------------------- | ----------------------------------------------------- |
+| ./Saved      | /home/steam/arkserver/ShooterGame/Saved                         | Server save files, including Configs, Logs, SavedArks |
+| ./Plugins    | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi plugin files location                          |
+| ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs           | ArkApi log files                                      |
 
-### 5. Using Docker Compose
+### 6. Using Docker Compose
 
 The project includes a `docker-compose.yml` file with all necessary configuration.  
 Using Docker Compose makes it easier to manage the container:
