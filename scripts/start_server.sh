@@ -10,7 +10,6 @@ echo "###################################################"
 # Start ARK server
 echo " [*] Starting ARK server..."
 # cd $INSTALL_DIR/ShooterGame/Binaries/Win64
-export PATH="$HOME/.local/bin:$PATH"
 # Start the server
 PROTONPATH=${PROTON_VERSION} \ 
 umu-run ShooterGameServer.exe \

@@ -35,8 +35,15 @@ RUN dpkg --add-architecture i386 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # 安装umu-launcher所需的Python依赖
-    pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib
-
+    pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib && \
+    # 下载并安装umu-launcher
+    git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
+    cd umu-launcher && \
+    ./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf umu-launcher 
 #&& \
 # 创建machine-id文件
 # mkdir -p /etc && \
@@ -45,15 +52,7 @@ RUN dpkg --add-architecture i386 && \
 
 USER ${USER}
 WORKDIR ${HOMEDIR}
-# 下载并安装umu-launcher
-RUN cd ${HOMEDIR} && \
-    git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
-    cd umu-launcher && \
-    ./configure.sh --user-install --use-system-pyzstd --use-system-urllib && \
-    make && \
-    make install && \
-    cd .. && \
-    rm -rf umu-launcher 
+
 # 下载Proton
 RUN mkdir -p ${HOMEDIR}/.local/share/Steam/compatibilitytools.d && \
     curl -sL "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz" -o proton.tar.gz && \
