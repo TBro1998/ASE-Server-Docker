@@ -4,8 +4,6 @@ LABEL "description"="Run Ark Survival Evolved Server With ArkApi"
 LABEL "maintainer"="tbro98 <tbro5201314@gmail.com>"
 
 ENV PROTON_VERSION="GE-Proton10-15"
-# 切换到root用户
-USER root
 
 # 添加i386架构支持并安装所有依赖
 RUN dpkg --add-architecture i386 && \
@@ -41,16 +39,14 @@ RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
 
 
 # 下载Proton
-RUN mkdir -p /home/steam/.local/share/Steam/compatibilitytools.d && \
+RUN mkdir -p /root/.local/share/Steam/compatibilitytools.d && \
     curl -sL "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz" -o proton.tar.gz && \
-    tar -xzf proton.tar.gz -C /home/steam/.local/share/Steam/compatibilitytools.d && \
+    tar -xzf proton.tar.gz -C /root/.local/share/Steam/compatibilitytools.d && \
     rm proton.tar.gz
 
-COPY scripts/* /home/steam/
-COPY ArkApi_3.56/* /home/steam/arkserver/ShooterGame/Binaries/Win64/
-RUN chmod +x /home/steam/*.sh
+COPY scripts/* /root/
+COPY ArkApi_3.56/* /root/arkserver/ShooterGame/Binaries/Win64/
+RUN chmod +x /root/*.sh
 
-# 切换到steam用户
-USER steam
-WORKDIR /home/steam
+WORKDIR /root
 ENTRYPOINT ["./start_server.sh"]
