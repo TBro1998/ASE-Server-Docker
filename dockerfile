@@ -16,7 +16,8 @@ COPY scripts/* ${HOMEDIR}/
 COPY ArkApi_3.56/* ${HOMEDIR}/arkserver/ShooterGame/Binaries/Win64/
 # Create user
 RUN useradd -d ${HOMEDIR} -m "${USER}" && \
-    chown -R ${USER}:${USER} ${HOMEDIR}
+    chown -R ${USER}:${USER} ${HOMEDIR} && \
+    chmod +x ${HOMEDIR}/start_server.sh
 
 
 # 添加i386架构支持并安装所有依赖
@@ -32,23 +33,22 @@ RUN dpkg --add-architecture i386 && \
     locales \
     software-properties-common && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-#&& \
-# 创建machine-id文件
-# mkdir -p /etc && \
-# dbus-uuidgen > /etc/machine-id && \
-# chmod 444 /etc/machine-id
-
-# 安装umu-launcher所需的Python依赖
-RUN pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib
-# 下载并安装umu-launcher
-RUN git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
+    rm -rf /var/lib/apt/lists/* && \
+    # 安装umu-launcher所需的Python依赖
+    pip3 install --break-system-packages urllib3 truststore build hatchling installer pyzstd wheel setuptools python-xlib && \
+    # 下载并安装umu-launcher
+    git clone https://github.com/Open-Wine-Components/umu-launcher.git && \
     cd umu-launcher && \
     ./configure.sh --prefix=/usr --use-system-pyzstd --use-system-urllib && \
     make && \
     make install && \
     cd .. && \
     rm -rf umu-launcher 
+#&& \
+# 创建machine-id文件
+# mkdir -p /etc && \
+# dbus-uuidgen > /etc/machine-id && \
+# chmod 444 /etc/machine-id
 
 USER ${USER}
 WORKDIR ${HOMEDIR}
