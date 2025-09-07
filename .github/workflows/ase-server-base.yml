@@ -37,11 +37,13 @@ jobs:
     - name: Build the Server Docker image (Release)
       run: |
         TAG=${GITHUB_REF#refs/tags/}
+        TAG=${TAG#base-}
         docker build . --file dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:latest -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG
     
     - name: Push Server Docker images (Release)
       run: |
         TAG=${GITHUB_REF#refs/tags/}
+        TAG=${TAG#base-}
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:latest
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG
 
@@ -76,10 +78,12 @@ jobs:
     - name: Build the Server Docker image (preaquatica)
       run: |
         TAG=${GITHUB_REF#refs/tags/}
+        TAG=${TAG#base-}
         docker build . --file dockerfile.preaquatica -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:latest-preaquatica -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG-preaquatica
     
     - name: Push Server Docker images (preaquatica)
       run: |
         TAG=${GITHUB_REF#refs/tags/}
+        TAG=${TAG#base-}
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:latest-preaquatica
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$TAG-preaquatica
