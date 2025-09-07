@@ -22,6 +22,9 @@ services:
       - ./Saved:/home/steam/arkserver/ShooterGame/Saved
       - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
       - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
-    # privileged: true
-    # tty: true
-    # stdin_open: true 
+    #networks:
+    #  - ark-network
+
+    # networks:
+    #   ark-network:
+    #     driver: bridge

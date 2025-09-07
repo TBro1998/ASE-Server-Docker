@@ -25,9 +25,48 @@ It includes the latest server files and ArkApi files at build time.
 
 ## Usage
 
-### 1. Enter the docker directory
+### 1. Deploy with Docker Compose
+
+#### Option 1: Use existing configuration
 ```bash
 cd docker
+```
+
+#### Option 2: Create custom configuration file
+
+You can also directly create and modify a `docker-compose.yml` file:
+
+```yaml
+services:
+  servers:
+    # if need preaquatica
+    # image: tbro98/ase-server:latest-preaquatica
+    image: tbro98/ase-server:latest
+    container_name: ase-server
+    restart: unless-stopped
+    ports:
+      - "7777:7777/udp"
+      - "7777:7777/tcp"
+      - "7778:7778/udp"
+      - "7778:7778/tcp"
+      - "27015:27015/udp"
+      - "27015:27015/tcp"
+      - "32330:32330/udp"
+      - "32330:32330/tcp"
+    environment:
+      - TZ=Asia/Shanghai
+      - GameModIds=
+      - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+    volumes:
+      - ./Saved:/home/steam/arkserver/ShooterGame/Saved
+      - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
+      - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
+    #networks:
+    #  - ark-network
+
+    # networks:
+    #   ark-network:
+    #     driver: bridge
 ```
 
 ### 2. Choose Docker Image Version

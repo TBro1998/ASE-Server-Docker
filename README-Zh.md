@@ -23,9 +23,49 @@
 
 ## 使用方法
 
-### 1. 进入docker目录
+### 1. 使用 Docker Compose 部署
+
+#### 方式一：使用现有配置文件
 ```bash
 cd docker
+```
+
+#### 方式二：创建自定义配置文件
+
+您也可以直接创建并修改 `docker-compose.yml` 文件：
+```yml
+services:
+  servers:
+    # 如果需要海洋DLC更新前的服务器版本，使用latest-preaquatica版本的镜像
+    # image: tbro98/ase-server:latest-preaquatica
+    image: tbro98/ase-server:latest
+    container_name: ase-server
+    restart: unless-stopped
+    ports:
+      - "7777:7777/udp"
+      - "7777:7777/tcp"
+      - "7778:7778/udp"
+      - "7778:7778/tcp"
+      - "27015:27015/udp"
+      - "27015:27015/tcp"
+      - "32330:32330/udp"
+      - "32330:32330/tcp"
+    environment:
+      - TZ=Asia/Shanghai
+      - GameModIds=
+      - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+    volumes:
+      - ./Saved:/home/steam/arkserver/ShooterGame/Saved
+      - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
+      - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
+    # 也可以不绑定端口，直接桥接网络
+    #networks:
+    #  - ark-network
+
+    # networks:
+    #   ark-network:
+    #     driver: bridge
+
 ```
 
 ### 2. 选择Docker镜像版本
