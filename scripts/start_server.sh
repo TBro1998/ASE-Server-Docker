@@ -18,7 +18,7 @@ if [ ! -f "$FIRST_STARTUP_FLAG" ]; then
     
     # Update game server
     echo " [*] Updating ARK server"
-    steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $STEAM_ID validate +quit 
+    steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $APP_UPDATE validate +quit 
     echo " [i] ARK server update completed"
 
     if  [ "${GameModIds}" != "" ]; then
@@ -33,7 +33,7 @@ if [ ! -f "$FIRST_STARTUP_FLAG" ]; then
             current_mod=$((current_mod + 1))
             mkdir -p $MOD_DOWNLOAD_DIR/$modid
             echo " [*] Downloading mod: $modid (${current_mod}/${total_mods})"
-            steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $MOD_DOWNLOAD_DIR/$modid +login anonymous +workshop_download_item 346110 $modid +quit
+            steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $MOD_DOWNLOAD_DIR/$modid +login $STEAM_USER +workshop_download_item 346110 $modid +quit
             
             echo " [*] Installing mod: $modid (${current_mod}/${total_mods})"
             python3 Ark_Mod_Install.py --workingdir $MOD_DOWNLOAD_DIR/$modid --modid $modid --namefile --installdir $INSTALL_DIR
