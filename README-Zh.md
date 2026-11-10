@@ -36,8 +36,9 @@ cd docker
 ```yml
 services:
   servers:
-    # 如果需要海洋DLC更新前的服务器版本，使用latest-preaquatica版本的镜像
-    # image: tbro98/ase-server:latest-preaquatica
+    # 如果需要海洋DLC更新前的服务器版本，改为下面的环境变量（会重新下载对应分支的服务端文件）
+    # environment:
+    #   APP_UPDATE: "376030 -beta preaquatica"
     image: tbro98/ase-server:latest
     container_name: ase-server
     restart: unless-stopped
@@ -70,18 +71,9 @@ services:
 
 ### 2. 选择Docker镜像版本
 
-项目提供两个Docker镜像版本：
+只提供一个镜像：`tbro98/ase-server:latest`（标准版本，海洋dlc更新后）。
+需要海洋 DLC 更新前的版本时，设置 `APP_UPDATE="376030 -beta preaquatica"`。
 
-- `tbro98/ase-server:latest` - 标准版本（海洋dlc更新后）
-- `tbro98/ase-server:latest-preaquatica` - Pre-Aquatica版本，海洋dlc更新前的版本
-
-如需使用preaquatica版本，请修改 `docker-compose.yml` 中的 `image` 行：
-```yaml
-# 从：
-image: tbro98/ase-server:latest
-# 改为：
-image: tbro98/ase-server:latest-preaquatica
-```
 
 ### 3. 配置服务器参数
 

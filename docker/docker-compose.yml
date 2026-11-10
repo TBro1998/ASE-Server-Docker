@@ -1,7 +1,8 @@
 services:
   servers:
-    # if need preaquatica
-    # image: tbro98/ase-server:latest-preaquatica
+    # 需要海洋 DLC 更新前的版本时取消注释（会重新下载对应分支的服务端文件）
+    # environment:
+    #   APP_UPDATE: "376030 -beta preaquatica"
     image: tbro98/ase-server:latest
     container_name: ase-server
     restart: unless-stopped

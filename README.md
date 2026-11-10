@@ -39,8 +39,9 @@ You can also directly create and modify a `docker-compose.yml` file:
 ```yaml
 services:
   servers:
-    # if need preaquatica
-    # image: tbro98/ase-server:latest-preaquatica
+    # To use the pre-aquatica branch, uncomment below (server files for that branch are downloaded instead)
+    # environment:
+    #   APP_UPDATE: "376030 -beta preaquatica"
     image: tbro98/ase-server:latest
     container_name: ase-server
     restart: unless-stopped
@@ -71,18 +72,9 @@ services:
 
 ### 2. Choose Docker Image Version
 
-The project provides two Docker image versions:
+There is a single image: `tbro98/ase-server:latest` (standard version, after the aquatica DLC update).
+Set `APP_UPDATE="376030 -beta preaquatica"` to download the pre-aquatica branch instead.
 
-- `tbro98/ase-server:latest` - Standard version (after aquatica DLC update)
-- `tbro98/ase-server:latest-preaquatica` - Pre-Aquatica version, before aquatica DLC update
-
-To use the preaquatica version, modify the `image` line in `docker-compose.yml`:
-```yaml
-# Change from:
-image: tbro98/ase-server:latest
-# To:
-image: tbro98/ase-server:latest-preaquatica
-```
 
 ### 3. Configure server parameters
 

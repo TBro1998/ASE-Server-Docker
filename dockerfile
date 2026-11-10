@@ -1,4 +1,11 @@
-FROM tbro98/ase-server-base:steamcmd
+FROM steamcmd/steamcmd:latest
+
+# 游戏服务端的 Steam 信息。服务端文件不再预下载，由入口脚本在首次启动时下载到挂载的数据卷。
+# 需要海洋 DLC 更新前的版本时，把 APP_UPDATE 改成 "376030 -beta preaquatica"
+ENV STEAM_ID=376030
+ENV APP_UPDATE=${STEAM_ID}
+ENV STEAM_USER="anonymous"
+ENV INSTALL_DIR='/home/steam/arkserver'
 
 ENV STEAM_PATH=${HOME}/.steam/steam
 ENV PROTON_VERSION=GE-Proton10-4
