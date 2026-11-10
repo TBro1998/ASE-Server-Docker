@@ -35,7 +35,7 @@ RUN set -ex; \
     dbus-uuidgen --ensure
 
 COPY scripts/* /home/steam/
-COPY ArkApi_3.56/* ${INSTALL_DIR}/ShooterGame/Binaries/Win64/
+COPY ArkApi_3.56/* /home/steam/arkapi/
 RUN chmod +x /home/steam/*.sh
 
 WORKDIR /home/steam

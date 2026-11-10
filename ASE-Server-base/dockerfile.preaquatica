@@ -7,6 +7,5 @@ ENV STEAM_USER="anonymous"
 ENV INSTALL_DIR='/home/steam/arkserver'
 
 
-# 下载和安装ARK服务器
-RUN mkdir -p $INSTALL_DIR && \
-    steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $INSTALL_DIR +login $STEAM_USER +app_update $APP_UPDATE validate +quit
+# 只创建安装目录。服务端文件不再打进镜像，由启动脚本在容器首次启动时下载到挂载的数据卷里
+RUN mkdir -p $INSTALL_DIR
