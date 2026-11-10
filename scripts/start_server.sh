@@ -51,8 +51,13 @@ else
 fi
 
 # Start server with proton
-SERVER_CMD="$PROTON run ShooterGameServer.exe \
-  ${SERVER_ARGS}"
+# 优先使用容器启动命令里传入的参数，每个参数保持独立，服务器名称、密码里的空格不会被拆开；
+# 没有传入时（旧版管理端）回退到 SERVER_ARGS，按空格拆分
+if [ "$#" -gt 0 ]; then
+    SERVER_ARGV=("$@")
+else
+    read -r -a SERVER_ARGV <<< "${SERVER_ARGS}"
+fi
 
 #  -NoBattlEye -servergamelog -ServerAllowAnsel -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore" 
 
@@ -61,7 +66,7 @@ echo " [*] Starting ARK server..."
 cd $INSTALL_DIR/ShooterGame/Binaries/Win64
 
 # Start the server
-$SERVER_CMD 
+"$PROTON" run ShooterGameServer.exe "${SERVER_ARGV[@]}"
 
 # 保持容器运行
 # tail -f /dev/null
