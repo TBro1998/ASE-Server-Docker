@@ -66,7 +66,20 @@ echo " [*] Starting ARK server..."
 cd $INSTALL_DIR/ShooterGame/Binaries/Win64
 
 # Start the server
-"$PROTON" run ShooterGameServer.exe "${SERVER_ARGV[@]}"
+# 放到后台运行并转发信号：docker stop 发出的 SIGTERM 会转给游戏进程，让它有机会正常退出；
+# 不转发的话信号停在这个脚本里，只能等超时后被 SIGKILL
+"$PROTON" run ShooterGameServer.exe "${SERVER_ARGV[@]}" &
+SERVER_PID=$!
+trap 'echo " [*] Stopping ARK server..."; kill -TERM "$SERVER_PID" 2>/dev/null' TERM INT
+wait "$SERVER_PID"
+EXIT_CODE=$?
+# 收到信号时 wait 会提前返回，这里再等游戏进程真正退出
+trap - TERM INT
+if kill -0 "$SERVER_PID" 2>/dev/null; then
+    wait "$SERVER_PID"
+    EXIT_CODE=$?
+fi
+exit "$EXIT_CODE"
 
 # 保持容器运行
 # tail -f /dev/null
