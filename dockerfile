@@ -8,7 +8,7 @@ ENV STEAM_USER="anonymous"
 ENV INSTALL_DIR='/home/steam/arkserver'
 
 ENV STEAM_PATH=${HOME}/.steam/steam
-ENV PROTON_VERSION=GE-Proton10-4
+ENV PROTON_VERSION=GE-Proton11-12
 ENV STEAM_COMPAT_CLIENT_INSTALL_PATH=${STEAM_PATH}
 ENV STEAM_COMPAT_DATA_PATH=${STEAM_PATH}/steamapps/compatdata/${STEAM_ID}
 ENV PROTON=${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION}/proton
@@ -21,17 +21,21 @@ RUN dpkg --add-architecture i386 \
     wget python3 \
     libfontconfig1 libfontconfig1:i386 libfreetype6 libfreetype6:i386 \
     dbus curl cabextract winbind \
+    # GE-Proton 11 的 proton 脚本启动时就会加载 libvulkan.so.1，缺了会直接报错退出（只需要加载器，不需要显卡）
+    libvulkan1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Proton build from Glorious Eggroll
+# 从 GE-Proton11-4 起 x86_64 包名带 -x86_64 后缀，解压出的顶层目录也带后缀，
+# 这里去掉顶层目录，统一解压到 compatibilitytools.d/${PROTON_VERSION}
 RUN mkdir -p ${STEAM_PATH} \
-    && mkdir -p ${STEAM_PATH}/compatibilitytools.d/ \
+    && mkdir -p ${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION} \
     && mkdir -p /root/.config/protonfixes \
     && mkdir -p ${STEAM_PATH}/steamapps/compatdata/${STEAM_ID} \
     && wget -q -O - \
-    https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}.tar.gz \
-    | tar -xz -C ${STEAM_PATH}/compatibilitytools.d/ \
+    https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_VERSION}/${PROTON_VERSION}-x86_64.tar.gz \
+    | tar -xz --strip-components=1 -C ${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION} \
     && cp -r ${STEAM_PATH}/compatibilitytools.d/${PROTON_VERSION}/files/share/default_pfx ${STEAM_PATH}/steamapps/compatdata/${STEAM_ID} 
 
 # Setup machine-id for Proton
