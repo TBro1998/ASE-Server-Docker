@@ -1,8 +1,5 @@
 services:
   servers:
-    # 需要海洋 DLC 更新前的版本时取消注释（会重新下载对应分支的服务端文件）
-    # environment:
-    #   APP_UPDATE: "376030 -beta preaquatica"
     image: tbro98/ase-server:latest
     container_name: ase-server
     restart: unless-stopped
@@ -17,15 +14,19 @@ services:
       - "32330:32330/tcp"
     environment:
       - TZ=Asia/Shanghai
+      # 需要海洋 DLC 更新前的版本时取消注释。已安装的服务器要先删除 ServerFiles/.install_complete
+      # - APP_UPDATE=376030 -beta preaquatica
       - GameModIds=
-      - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+      - SERVER_ARGS=TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore
     volumes:
+      # 服务端文件，首次启动时下载到这里，重建容器不会重新下载
+      - ./ServerFiles:/home/steam/arkserver
       - ./Saved:/home/steam/arkserver/ShooterGame/Saved
       - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
       - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
     #networks:
     #  - ark-network
 
-    # networks:
-    #   ark-network:
-    #     driver: bridge
+# networks:
+#   ark-network:
+#     driver: bridge

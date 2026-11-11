@@ -1,47 +1,48 @@
 # Docker ARK Server
 
-[中文文档](README-Zh.md)  
+[中文文档](README-Zh.md)
 
-This is a Docker-based ARK: Survival Evolved game server that uses GE-Proton to run the Windows version of the ARK server, with ArkApi support.  
-It includes the latest server files and ArkApi files at build time.
+This is a Docker-based ARK: Survival Evolved game server that uses GE-Proton to run the Windows version of the ARK server, with ArkApi support.
+
+The image only contains SteamCMD, GE-Proton, the startup scripts and ArkApi. **It does not include the game server files.** On the first start, the entrypoint script downloads the server files into the mounted directory. Later starts and container rebuilds reuse them without downloading again.
+
+To manage multiple servers through a web UI, see [ArkServerCommander](https://github.com/TBro1998/ArkServerCommander), which runs on this image.
 
 ## Inspiration and Code Sources
 - [Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server)
 - [Ark_Mod_Downloader_v2](https://github.com/CobraColin/Ark_Mod_Downloader_v2)
 
 ## Disclaimer
-- *Compared to running directly on Windows, it will occupy more disk space
-- Since we're using GE-Proton (based on Wine) to simulate Windows system APIs on Linux to run the Windows version of the game server, memory usage might be slightly higher
-- Including the latest server files has its pros and cons. While it saves download time during initial deployment for multi-server setups, we may release a Docker image without server files in the future based on needs
+- Uses more disk space than running directly on Windows
+- GE-Proton (based on Wine) emulates Windows system APIs on Linux to run the Windows server, so memory usage may be slightly higher
+- The server files are large, and the first start has to wait for the download; how long depends on your network. Each container downloads its own copy, so disk usage multiplies when running several servers
 
 ## Known Issues
-- When running the server with GE-Proton, server output information cannot be viewed in the container logs
-- The Mods download/update process is not perfect
+- When running the server with GE-Proton, the server's own output does not appear in the container logs (script output such as downloads and mod installation does)
+- Installed mods are not updated when the Workshop version changes; reinstall them manually (see "Updating the server and mods" below)
+- Once the server files are installed, the game server is not updated automatically on start
 
 ## Future Plans
-- Test performance differences between running the server directly on Windows versus using GE-Proton on Linux, and whether UDP performance is better on Linux
-- Would it be more suitable to use [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) to replace GE-Proton for running ASE server?
-- Develop a server management system based on Go+Vue?
+- Test the performance difference between running the server directly on Windows and running it with GE-Proton on Linux, and whether UDP performance is better on Linux
+- Would [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) be a better fit than GE-Proton for running the ASE server?
 
 ## Usage
 
 ### 1. Deploy with Docker Compose
 
-#### Option 1: Use existing configuration
+#### Option 1: Use the existing configuration
 ```bash
 cd docker
+docker-compose up -d
 ```
 
-#### Option 2: Create custom configuration file
+#### Option 2: Create your own configuration file
 
-You can also directly create and modify a `docker-compose.yml` file:
+You can also write your own `docker-compose.yml`:
 
 ```yaml
 services:
   servers:
-    # To use the pre-aquatica branch, uncomment below (server files for that branch are downloaded instead)
-    # environment:
-    #   APP_UPDATE: "376030 -beta preaquatica"
     image: tbro98/ase-server:latest
     container_name: ase-server
     restart: unless-stopped
@@ -56,47 +57,91 @@ services:
       - "32330:32330/tcp"
     environment:
       - TZ=Asia/Shanghai
+      # Uncomment to use the pre-aquatica branch
+      # - APP_UPDATE=376030 -beta preaquatica
       - GameModIds=
-      - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+      - SERVER_ARGS=TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore
     volumes:
+      # Server files, downloaded here on the first start
+      - ./ServerFiles:/home/steam/arkserver
       - ./Saved:/home/steam/arkserver/ShooterGame/Saved
       - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
       - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
+    # You can also skip the port bindings and use a bridge network
     #networks:
     #  - ark-network
 
-    # networks:
-    #   ark-network:
-    #     driver: bridge
+# networks:
+#   ark-network:
+#     driver: bridge
 ```
 
-### 2. Choose Docker Image Version
+The first start downloads the server files. Follow the progress with `docker-compose logs -f`. When `Starting ARK server...` appears, the download and installation are finished and the server is starting.
 
-There is a single image: `tbro98/ase-server:latest` (standard version, after the aquatica DLC update).
-Set `APP_UPDATE="376030 -beta preaquatica"` to download the pre-aquatica branch instead.
+### 2. Docker Image Version
 
+There is a single image: `tbro98/ase-server`. `latest` is the newest build, and each release also has a version tag (e.g. `v0.35`).
 
-### 3. Configure server parameters
+The game branch is selected by the `APP_UPDATE` environment variable:
 
-Server parameters are configured through environment variables in the `docker-compose.yml` file. You can modify the following parameters:
+| `APP_UPDATE`                 | Description                              |
+| ---------------------------- | ---------------------------------------- |
+| `376030` (default)           | Standard version (after the aquatica DLC update) |
+| `376030 -beta preaquatica`   | Version before the aquatica DLC update   |
 
-- `GameModIds`: Comma-separated list of mod IDs to install
-- `SERVER_ARGS`: Server startup arguments including map, ports, and other settings
+`APP_UPDATE` only applies when the server files are downloaded. To switch an installed server to another branch, delete `.install_complete` from the server files directory, then restart the container.
 
-Example configuration in `docker-compose.yml`:
+### 3. Configure Server Parameters
+
+Server parameters are set through environment variables in `docker-compose.yml`:
+
+- `GameModIds`: comma-separated list of mod IDs to install
+- `SERVER_ARGS`: server startup arguments, including map, ports and other settings, split on spaces
+- `APP_UPDATE`: the game branch to download, see the previous section
+- `TZ`: container time zone
+
+Example:
 ```yaml
 environment:
   - GameModIds=895711211,669673294,1136125765
-  - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+  - SERVER_ARGS=TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore
 ```
 
-To apply configuration changes, restart the container:
+> In the list syntax (`- KEY=value`), do not wrap the value in quotes; the quotes become part of the value.
+
+`SERVER_ARGS` is split on spaces, so arguments such as the server name cannot contain spaces. When you need spaces, pass the arguments as the container command instead. Each item is passed as a separate argument, and `SERVER_ARGS` is ignored when a command is given:
+```yaml
+command:
+  - "TheIsland?listen?SessionName=My ARK Server?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password"
+  - "-NoBattlEye"
+  - "-servergamelog"
+  - "-nosteamclient"
+  - "-game"
+  - "-server"
+  - "-log"
+```
+
+To apply configuration changes, recreate the container:
 ```bash
-docker-compose down
-docker-compose up -d
+docker-compose up -d --force-recreate
 ```
 
-### 4. Available Maps
+The server files live in the mounted directory, so recreating the container does not download them again. Mods newly added to `GameModIds` are downloaded on the next start; mods already installed are skipped.
+
+### 4. Updating the Server and Mods
+
+The install state is kept in two files in the server files directory (`./ServerFiles` in the example above):
+
+| File                 | Purpose                                                              |
+| -------------------- | -------------------------------------------------------------------- |
+| `.install_complete`  | Server files are installed. While it exists, the game server download and update are skipped on start |
+| `.installed_mods`    | Installed mod IDs, one per line. Mods listed here are skipped on start |
+
+- **Update the game server**: delete `.install_complete` and restart the container. SteamCMD updates and validates the existing files instead of downloading from scratch
+- **Update a mod**: remove that mod ID's line from `.installed_mods` and restart the container
+- **ArkApi**: ships with the image and is synced into the server directory on every start, so updating the image upgrades it. An existing `config.json` is not overwritten
+
+### 5. Available Maps
 
 - TheIsland
 - TheCenter
@@ -110,28 +155,39 @@ docker-compose up -d
 - Genesis2
 - LostIsland
 
-### 5. Data Persistence
+### 6. Data Persistence
 
-To save game data, it is recommended to mount the following volumes:
+Mounting the following directories is recommended:
 
-| Local Path   | Container Path                                                  | Description                                           |
-| ------------ | --------------------------------------------------------------- | ----------------------------------------------------- |
-| ./Saved      | /home/steam/arkserver/ShooterGame/Saved                         | Server save files, including Configs, Logs, SavedArks |
-| ./Plugins    | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi plugin files location                          |
-| ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs           | ArkApi log files                                      |
+| Local Path    | Container Path                                                    | Description                                            |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------------------------ |
+| ./ServerFiles | /home/steam/arkserver                                             | Server files, ArkApi and install markers. Without this mount, every container rebuild downloads the server again |
+| ./Saved       | /home/steam/arkserver/ShooterGame/Saved                           | Server save files, including Config, Logs, SavedArks   |
+| ./Plugins     | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins   | ArkApi plugins                                         |
+| ./ArkApiLogs  | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs             | ArkApi logs                                            |
 
-### 6. Using Docker Compose
+`Saved`, `Plugins` and `ArkApiLogs` are nested inside the server files directory; mounting them separately makes them easier to back up and edit.
 
-The project includes a `docker-compose.yml` file with all necessary configuration.  
-Using Docker Compose makes it easier to manage the container:
+### 7. Common Commands
 
 ```bash
-# Build and start the container
+# Pull the image and start the container
 docker-compose up -d
 
-# View logs
+# View logs (shows download progress on the first start)
 docker-compose logs -f
 
 # Stop the container
 docker-compose down
+
+# Recreate the container after updating the image
+docker-compose pull && docker-compose up -d
 ```
+
+### 8. Building the Image Yourself
+
+```bash
+docker build -f dockerfile -t tbro98/ase-server:latest .
+```
+
+Pushing a `v*` tag triggers GitHub Actions to build the image and push both `latest` and the version tag.

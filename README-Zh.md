@@ -1,25 +1,30 @@
 # Docker ARK 服务器
 
-这是一个基于Docker的ARK: Survival Evolved游戏服务器，使用GE-Proton运行Windows版ARK服务器，支持ArkApi。  
-包含了构建时最新的服务端文件和ArkApi文件。
+[English](README.md)
+
+这是一个基于 Docker 的 ARK: Survival Evolved 游戏服务器，使用 GE-Proton 运行 Windows 版 ARK 服务器，支持 ArkApi。
+
+镜像里只有 SteamCMD、GE-Proton、启动脚本和 ArkApi，**不包含游戏服务端文件**。容器首次启动时，入口脚本会把服务端文件下载到挂载的目录里，之后的启动和容器重建都直接复用，不会重新下载。
+
+需要通过 Web 界面管理多台服务器，可以使用 [ArkServerCommander](https://github.com/TBro1998/ArkServerCommander)，它使用的就是本镜像。
 
 ## 灵感及部分代码来源
 - [Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server)
 - [Ark_Mod_Downloader_v2](https://github.com/CobraColin/Ark_Mod_Downloader_v2)
 
 ## 声明
-- *相比直接在Windows上运行的方式会多占用更多的磁盘空间
-- 因为是在Linux上使用GE-Proton(基于Wine)模拟Windows系统的API运行Windows端的游戏服务器，所以内存占用可能会稍微增加
-- 包含最新的服务端文件这种做法有利有弊，如果是开多通服务器会在一开始的部署阶段省去下载的等待时间，后续根据需要可以出一套无服务端文件的Docker镜像
+- 相比直接在 Windows 上运行，会多占用一些磁盘空间
+- 因为是在 Linux 上使用 GE-Proton（基于 Wine）模拟 Windows 系统 API 运行 Windows 版服务端，内存占用可能会稍微增加
+- 服务端文件较大，首次启动要等它下载完成，耗时取决于网络。每个容器各下载一份，开多台服务器时磁盘占用会成倍增加
 
 ## 已知问题
-- 使用GE-Proto运行服务端，无法在容器的日志中查看服务端的输出信息
-- Mods的下载安装流程不够完善
+- 使用 GE-Proton 运行服务端，无法在容器日志中看到服务端自身的输出（下载、Mod 安装等脚本输出可以看到）
+- 已安装的 Mod 不会随创意工坊更新，需要手动触发重新安装（见下文"更新服务端和 Mod"）
+- 服务端文件安装完成后，启动时不会自动更新游戏本体
 
 ## 未来计划
-- 测试在Windows直接运行服务器跟使用GE-Proton在linux上运行的性能差异，以及在linux上UDP性能是否会更优秀?
-- 使用(umu-launcher)[https://github.com/Open-Wine-Components/umu-launcher]来替代GE-Proton运行ASE服务器是否会更合适?
-- 开发一套基于Go+Vue的服务器管理系统?
+- 测试在 Windows 直接运行服务器与在 Linux 上使用 GE-Proton 运行的性能差异，以及在 Linux 上 UDP 性能是否更好
+- 使用 [umu-launcher](https://github.com/Open-Wine-Components/umu-launcher) 替代 GE-Proton 运行 ASE 服务器是否更合适
 
 ## 使用方法
 
@@ -28,17 +33,15 @@
 #### 方式一：使用现有配置文件
 ```bash
 cd docker
+docker-compose up -d
 ```
 
 #### 方式二：创建自定义配置文件
 
-您也可以直接创建并修改 `docker-compose.yml` 文件：
-```yml
+也可以自己创建 `docker-compose.yml`：
+```yaml
 services:
   servers:
-    # 如果需要海洋DLC更新前的服务器版本，改为下面的环境变量（会重新下载对应分支的服务端文件）
-    # environment:
-    #   APP_UPDATE: "376030 -beta preaquatica"
     image: tbro98/ase-server:latest
     container_name: ase-server
     restart: unless-stopped
@@ -53,9 +56,13 @@ services:
       - "32330:32330/tcp"
     environment:
       - TZ=Asia/Shanghai
+      # 需要海洋 DLC 更新前的版本时取消注释
+      # - APP_UPDATE=376030 -beta preaquatica
       - GameModIds=
-      - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+      - SERVER_ARGS=TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds= -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore
     volumes:
+      # 服务端文件，首次启动时下载到这里
+      - ./ServerFiles:/home/steam/arkserver
       - ./Saved:/home/steam/arkserver/ShooterGame/Saved
       - ./Plugins:/home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins
       - ./ArkApiLogs:/home/steam/arkserver/ShooterGame/Binaries/Win64/logs
@@ -63,39 +70,77 @@ services:
     #networks:
     #  - ark-network
 
-    # networks:
-    #   ark-network:
-    #     driver: bridge
-
+# networks:
+#   ark-network:
+#     driver: bridge
 ```
 
-### 2. 选择Docker镜像版本
+首次启动会下载服务端文件，可以用 `docker-compose logs -f` 查看进度，看到 `Starting ARK server...` 表示下载和安装已完成，服务端开始启动。
 
-只提供一个镜像：`tbro98/ase-server:latest`（标准版本，海洋dlc更新后）。
-需要海洋 DLC 更新前的版本时，设置 `APP_UPDATE="376030 -beta preaquatica"`。
+### 2. Docker 镜像版本
 
+只提供一个镜像：`tbro98/ase-server`。`latest` 是最新版本，另有按版本号打的标签（如 `v0.35`）。
+
+游戏分支由环境变量 `APP_UPDATE` 决定：
+
+| `APP_UPDATE`                   | 说明                         |
+| ------------------------------ | ---------------------------- |
+| `376030`（默认）               | 正式版本（海洋 DLC 更新后）  |
+| `376030 -beta preaquatica`     | 海洋 DLC 更新前的版本        |
+
+`APP_UPDATE` 只在下载服务端文件时生效。已经安装过的服务器要切换分支，需要先删除服务端文件目录里的 `.install_complete`，再重启容器。
 
 ### 3. 配置服务器参数
 
-服务器参数通过 `docker-compose.yml` 文件中的环境变量进行配置。您可以修改以下参数：
+服务器参数通过 `docker-compose.yml` 里的环境变量配置：
 
-- `GameModIds`: 要安装的mod ID列表，用逗号分隔
-- `SERVER_ARGS`: 服务器启动参数，包括地图、端口和其他设置
+- `GameModIds`：要安装的 Mod ID，用逗号分隔
+- `SERVER_ARGS`：服务器启动参数，包括地图、端口和其他设置，按空格拆分
+- `APP_UPDATE`：下载的游戏分支，见上一节
+- `TZ`：容器时区
 
-在 `docker-compose.yml` 中的配置示例：
+示例：
 ```yaml
 environment:
   - GameModIds=895711211,669673294,1136125765
-  - SERVER_ARGS="TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore"
+  - SERVER_ARGS=TheIsland?listen?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password?GameModIds=895711211,669673294,1136125765 -NoBattlEye -servergamelog -structurememopts -UseStructureStasisGrid -SecureSendArKPayload -UseItemDupeCheck -UseSecureSpawnRules -nosteamclient -game -server -log -MinimumTimeBetweenInventoryRetrieval=3600 -newsaveformat -usestore
 ```
 
-要应用配置更改，请重启容器：
+> 列表写法（`- KEY=value`）里不要给值加引号，引号会被当成值的一部分。
+
+`SERVER_ARGS` 按空格拆分，服务器名称等参数里不能有空格。需要空格时改用容器启动命令传参，每一项就是一个独立参数，传入后 `SERVER_ARGS` 会被忽略：
+```yaml
+command:
+  - "TheIsland?listen?SessionName=My ARK Server?Port=7777?QueryPort=27015?MaxPlayers=70?RCONEnabled=True?RCONPort=32330?ServerAdminPassword=password"
+  - "-NoBattlEye"
+  - "-servergamelog"
+  - "-nosteamclient"
+  - "-game"
+  - "-server"
+  - "-log"
+```
+
+要应用配置更改，请重建容器：
 ```bash
-docker-compose down
-docker-compose up -d
+docker-compose up -d --force-recreate
 ```
 
-### 4. 可用地图
+服务端文件保存在挂载的目录里，重建容器不会重新下载；`GameModIds` 里新增的 Mod 会在下次启动时下载，已经装过的会跳过。
+
+### 4. 更新服务端和 Mod
+
+安装状态记录在服务端文件目录（上例中的 `./ServerFiles`）里的两个文件中：
+
+| 文件                 | 作用                                                     |
+| -------------------- | -------------------------------------------------------- |
+| `.install_complete`  | 服务端文件已安装。存在时启动跳过游戏本体的下载和更新     |
+| `.installed_mods`    | 已安装的 Mod ID，每行一个。列在这里的 Mod 启动时跳过     |
+
+- **更新游戏本体**：删除 `.install_complete` 后重启容器，SteamCMD 会在已有文件上更新并校验，不会从头下载
+- **更新某个 Mod**：从 `.installed_mods` 里删掉该 Mod ID 所在的行，重启容器
+- **ArkApi**：随镜像发布，每次启动都会同步到服务端目录，更新镜像即可升级；已存在的 `config.json` 不会被覆盖
+
+### 5. 可用地图
 
 - TheIsland
 - TheCenter
@@ -109,28 +154,39 @@ docker-compose up -d
 - Genesis2
 - LostIsland
 
-### 5. 数据持久化
+### 6. 数据持久化
 
-为了保存游戏数据，建议挂载以下存储卷：
+建议挂载以下目录：
 
-| 本地路径     | 容器路径                                                        | 说明                                         |
-| ------------ | --------------------------------------------------------------- | -------------------------------------------- |
-| ./Saved      | /home/steam/arkserver/ShooterGame/Saved                         | 服务器保存文件，包含Configs、Logs、SavedArks |
-| ./Plugins    | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins | ArkApi 插件文件存放位置                      |
-| ./ArkApiLogs | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs           | ArkApi 的日志文件                            |
+| 本地路径      | 容器路径                                                          | 说明                                                   |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------------------------ |
+| ./ServerFiles | /home/steam/arkserver                                             | 服务端文件、ArkApi 和安装标记。不挂载的话，每次重建容器都会重新下载 |
+| ./Saved       | /home/steam/arkserver/ShooterGame/Saved                           | 服务器保存文件，包含 Config、Logs、SavedArks           |
+| ./Plugins     | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins   | ArkApi 插件存放位置                                    |
+| ./ArkApiLogs  | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs             | ArkApi 日志                                            |
 
-### 6. 使用Docker Compose 运行容器
+`Saved`、`Plugins`、`ArkApiLogs` 嵌套挂载在服务端文件目录下面，单独挂出来方便备份和修改。
 
-项目包含了 docker-compose.yml 文件，包含所有必要的配置。  
-使用Docker Compose更方便地管理容器：
+### 7. 常用命令
 
 ```bash
-# 构建并启动容器
+# 拉取镜像并启动容器
 docker-compose up -d
 
-# 查看日志
+# 查看日志（首次启动可以看到下载进度）
 docker-compose logs -f
 
 # 停止容器
 docker-compose down
+
+# 更新镜像后重建容器
+docker-compose pull && docker-compose up -d
 ```
+
+### 8. 自行构建镜像
+
+```bash
+docker build -f dockerfile -t tbro98/ase-server:latest .
+```
+
+推送 `v*` 标签时，GitHub Actions 会自动构建镜像并推送 `latest` 和对应版本号的标签。
