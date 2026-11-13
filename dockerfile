@@ -6,6 +6,8 @@ ENV STEAM_ID=376030
 ENV APP_UPDATE=${STEAM_ID}
 ENV STEAM_USER="anonymous"
 ENV INSTALL_DIR='/home/steam/arkserver'
+# 随镜像发布的 ArkApi 版本，对应仓库里的 ArkApi_<版本> 目录；入口脚本会把它写进服务端文件卷，管理端据此显示版本
+ENV ARKAPI_VERSION=3.56
 
 ENV STEAM_PATH=${HOME}/.steam/steam
 ENV PROTON_VERSION=GE-Proton11-12
@@ -61,7 +63,7 @@ RUN set -ex; \
     dbus-uuidgen --ensure
 
 COPY scripts/* /home/steam/
-COPY ArkApi_3.56/* /home/steam/arkapi/
+COPY ArkApi_${ARKAPI_VERSION}/* /home/steam/arkapi/
 RUN chmod +x /home/steam/*.sh
 
 WORKDIR /home/steam

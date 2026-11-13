@@ -16,16 +16,39 @@ ARKAPI_SRC="/home/steam/arkapi"
 
 mkdir -p "$INSTALL_DIR"
 
+# 下载阶段也要响应 docker stop：bash 要等前台命令结束才处理信号，steamcmd 下载可能持续很久，
+# 所以耗时命令用 run 放到单独的进程组里后台运行并 wait，收到 SIGTERM 时结束整个进程组后退出，
+# 不必等 30 秒超时被强杀。安装标记只在成功后写入，中断的下载下次启动时会继续
+CHILD_PID=""
+on_stop() {
+    echo " [*] Stop signal received, aborting..."
+    if [ -n "$CHILD_PID" ]; then
+        kill -TERM -- "-$CHILD_PID" 2>/dev/null
+        wait "$CHILD_PID" 2>/dev/null
+    fi
+    exit 143
+}
+trap on_stop TERM INT
+
+run() {
+    setsid "$@" &
+    CHILD_PID=$!
+    wait "$CHILD_PID"
+    local code=$?
+    CHILD_PID=""
+    return $code
+}
+
 if [ ! -f "$INSTALL_FLAG" ] || [ ! -f "$SERVER_EXE" ]; then
     echo " [*] Server files not found in $INSTALL_DIR - downloading, this takes a while..."
 
     # Update Steam client
     echo " [*] Updating Steam client"
-    steamcmd +app_update +quit
+    run steamcmd +app_update +quit
 
     # Download game server
     echo " [*] Updating ARK server"
-    steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir "$INSTALL_DIR" +login "$STEAM_USER" +app_update "$APP_UPDATE" validate +quit
+    run steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir "$INSTALL_DIR" +login "$STEAM_USER" +app_update "$APP_UPDATE" validate +quit
     if [ ! -f "$SERVER_EXE" ]; then
         echo " [!] ARK server download failed: $SERVER_EXE not found"
         exit 1
@@ -36,7 +59,8 @@ else
     echo " [i] Server files already installed - skipping download"
 fi
 
-# Mod：只下载还没装过的，已装的记录在卷里的 .installed_mods
+# Mod：只下载还没装过的，已装的记录在卷里的 .installed_mods，每行 "Mod ID 安装时间（Unix 秒）"，
+# 管理端据此判断创意工坊上是否有更新；旧版本写的行只有 Mod ID，同样视为已安装
 if [ -n "${GameModIds}" ]; then
     MOD_DOWNLOAD_DIR="/home/steam/download"
     touch "$INSTALLED_MODS_FILE"
@@ -45,18 +69,18 @@ if [ -n "${GameModIds}" ]; then
     current_mod=0
     for modid in $mod_list; do
         current_mod=$((current_mod + 1))
-        if grep -qx "$modid" "$INSTALLED_MODS_FILE"; then
+        if grep -qE "^${modid}( |$)" "$INSTALLED_MODS_FILE"; then
             echo " [i] Mod $modid already installed (${current_mod}/${total_mods})"
             continue
         fi
         echo "--------------------------------"
         mkdir -p "$MOD_DOWNLOAD_DIR/$modid"
         echo " [*] Downloading mod: $modid (${current_mod}/${total_mods})"
-        steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir "$MOD_DOWNLOAD_DIR/$modid" +login "$STEAM_USER" +workshop_download_item 346110 "$modid" +quit
+        run steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir "$MOD_DOWNLOAD_DIR/$modid" +login "$STEAM_USER" +workshop_download_item 346110 "$modid" +quit
 
         echo " [*] Installing mod: $modid (${current_mod}/${total_mods})"
-        if python3 Ark_Mod_Install.py --workingdir "$MOD_DOWNLOAD_DIR/$modid" --modid "$modid" --namefile --installdir "$INSTALL_DIR"; then
-            echo "$modid" >> "$INSTALLED_MODS_FILE"
+        if run python3 Ark_Mod_Install.py --workingdir "$MOD_DOWNLOAD_DIR/$modid" --modid "$modid" --namefile --installdir "$INSTALL_DIR"; then
+            echo "$modid $(date +%s)" >> "$INSTALLED_MODS_FILE"
         else
             echo " [!] Failed to install mod $modid, will retry on next start"
         fi
@@ -77,6 +101,9 @@ if [ -d "$ARKAPI_SRC" ]; then
         fi
         cp -a "$f" "$BIN_DIR/"
     done
+    if [ -n "$ARKAPI_VERSION" ]; then
+        echo "$ARKAPI_VERSION" > "$INSTALL_DIR/.arkapi_version"
+    fi
 fi
 
 # Start server with proton
