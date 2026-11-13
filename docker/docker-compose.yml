@@ -1,6 +1,7 @@
 services:
   servers:
-    image: tbro98/ase-server:latest
+    # 不需要 ArkApi 时改用 tbro98/ase-server:linux（原生 Linux 版），并去掉 Plugins、ArkApiLogs 两个挂载
+    image: tbro98/ase-server:proton
     container_name: ase-server
     restart: unless-stopped
     ports:

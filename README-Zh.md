@@ -2,9 +2,12 @@
 
 [English](README.md)
 
-这是一个基于 Docker 的 ARK: Survival Evolved 游戏服务器，使用 GE-Proton 运行 Windows 版 ARK 服务器，支持 ArkApi。
+这是一个基于 Docker 的 ARK: Survival Evolved 游戏服务器，提供两个镜像：
 
-镜像里只有 SteamCMD、GE-Proton、启动脚本和 ArkApi，**不包含游戏服务端文件**。容器首次启动时，入口脚本会把服务端文件下载到挂载的目录里，之后的启动和容器重建都直接复用，不会重新下载。
+- `tbro98/ase-server:linux`：运行原生 Linux 版服务端，体积小、占用少
+- `tbro98/ase-server:proton`：用 GE-Proton 运行 Windows 版服务端，可以加载 ArkApi 插件
+
+镜像里只有 SteamCMD、启动脚本（proton 镜像还有 GE-Proton），**不包含游戏服务端文件，也不包含 ArkApi**。容器首次启动时，入口脚本会把服务端文件下载到挂载的目录里，之后的启动和容器重建都直接复用，不会重新下载。
 
 需要通过 Web 界面管理多台服务器，可以使用 [ArkServerCommander](https://github.com/TBro1998/ArkServerCommander)，它使用的就是本镜像。
 
@@ -14,11 +17,11 @@
 
 ## 声明
 - 相比直接在 Windows 上运行，会多占用一些磁盘空间
-- 因为是在 Linux 上使用 GE-Proton（基于 Wine）模拟 Windows 系统 API 运行 Windows 版服务端，内存占用可能会稍微增加
+- proton 镜像在 Linux 上使用 GE-Proton（基于 Wine）模拟 Windows 系统 API 运行 Windows 版服务端，内存占用可能会稍微增加；不需要 ArkApi 时建议用 linux 镜像
 - 服务端文件较大，首次启动要等它下载完成，耗时取决于网络。每个容器各下载一份，开多台服务器时磁盘占用会成倍增加
 
 ## 已知问题
-- 使用 GE-Proton 运行服务端，无法在容器日志中看到服务端自身的输出（下载、Mod 安装等脚本输出可以看到）
+- proton 镜像无法在容器日志中看到服务端自身的输出（下载、Mod 安装等脚本输出可以看到）
 - 已安装的 Mod 不会随创意工坊更新，需要手动触发重新安装（见下文"更新服务端和 Mod"）
 - 服务端文件安装完成后，启动时不会自动更新游戏本体
 
@@ -42,7 +45,8 @@ docker-compose up -d
 ```yaml
 services:
   servers:
-    image: tbro98/ase-server:latest
+    # 不需要 ArkApi 时改用 tbro98/ase-server:linux（原生 Linux 版），并去掉 Plugins、ArkApiLogs 两个挂载
+    image: tbro98/ase-server:proton
     container_name: ase-server
     restart: unless-stopped
     ports:
@@ -79,7 +83,16 @@ services:
 
 ### 2. Docker 镜像版本
 
-只提供一个镜像：`tbro98/ase-server`。`latest` 是最新版本，另有按版本号打的标签（如 `v0.35`）。
+同一个 dockerfile 构建两个镜像：
+
+| 标签                          | 说明                                              |
+| ----------------------------- | ------------------------------------------------- |
+| `linux`、`<版本>-linux`       | 原生 Linux 版服务端                               |
+| `proton`、`<版本>-proton`     | GE-Proton 运行 Windows 版服务端，可加载 ArkApi    |
+
+`latest` 不再更新，停留在最后一个自带 ArkApi 的版本。
+
+两个镜像可以共用同一个服务端文件目录：安装标记 `.install_complete` 里记录了安装时的平台，换用另一个镜像后启动时会重新校验，只补下载这个平台的主程序，存档、配置和 Mod 不受影响。Linux 版服务端读取 `Saved/Config/LinuxServer`，启动脚本会把它建成指向 `WindowsServer` 的符号链接，两个平台共用同一份配置。
 
 游戏分支由环境变量 `APP_UPDATE` 决定：
 
@@ -138,7 +151,7 @@ docker-compose up -d --force-recreate
 
 - **更新游戏本体**：删除 `.install_complete` 后重启容器，SteamCMD 会在已有文件上更新并校验，不会从头下载
 - **更新某个 Mod**：从 `.installed_mods` 里删掉该 Mod ID 所在的行，重启容器
-- **ArkApi**：随镜像发布，每次启动都会同步到服务端目录，更新镜像即可升级；已存在的 `config.json` 不会被覆盖
+- **ArkApi**（只有 proton 镜像支持）：镜像不再自带，需要把 ArkApi 压缩包（version.dll、msdia140.dll、config.json 等）解压到服务端文件目录的 `ShooterGame/Binaries/Win64`；用 ArkServerCommander 时由管理器安装和更新
 
 ### 5. 可用地图
 
@@ -160,10 +173,10 @@ docker-compose up -d --force-recreate
 
 | 本地路径      | 容器路径                                                          | 说明                                                   |
 | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------ |
-| ./ServerFiles | /home/steam/arkserver                                             | 服务端文件、ArkApi 和安装标记。不挂载的话，每次重建容器都会重新下载 |
+| ./ServerFiles | /home/steam/arkserver                                             | 服务端文件、ArkApi（proton 镜像）和安装标记。不挂载的话，每次重建容器都会重新下载 |
 | ./Saved       | /home/steam/arkserver/ShooterGame/Saved                           | 服务器保存文件，包含 Config、Logs、SavedArks           |
-| ./Plugins     | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins   | ArkApi 插件存放位置                                    |
-| ./ArkApiLogs  | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs             | ArkApi 日志                                            |
+| ./Plugins     | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins   | ArkApi 插件存放位置（仅 proton 镜像）                  |
+| ./ArkApiLogs  | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs             | ArkApi 日志（仅 proton 镜像）                          |
 
 `Saved`、`Plugins`、`ArkApiLogs` 嵌套挂载在服务端文件目录下面，单独挂出来方便备份和修改。
 
@@ -186,7 +199,8 @@ docker-compose pull && docker-compose up -d
 ### 8. 自行构建镜像
 
 ```bash
-docker build -f dockerfile -t tbro98/ase-server:latest .
+docker build -f dockerfile --target linux -t tbro98/ase-server:linux .
+docker build -f dockerfile --target proton -t tbro98/ase-server:proton .
 ```
 
-推送 `v*` 标签时，GitHub Actions 会自动构建镜像并推送 `latest` 和对应版本号的标签。
+推送 `v*` 标签时，GitHub Actions 会构建两个镜像，推送 `linux`、`proton` 和带版本号的 `<版本>-linux`、`<版本>-proton` 标签。

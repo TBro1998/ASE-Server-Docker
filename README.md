@@ -2,9 +2,12 @@
 
 [中文文档](README-Zh.md)
 
-This is a Docker-based ARK: Survival Evolved game server that uses GE-Proton to run the Windows version of the ARK server, with ArkApi support.
+This is a Docker-based ARK: Survival Evolved game server with two images:
 
-The image only contains SteamCMD, GE-Proton, the startup scripts and ArkApi. **It does not include the game server files.** On the first start, the entrypoint script downloads the server files into the mounted directory. Later starts and container rebuilds reuse them without downloading again.
+- `tbro98/ase-server:linux`: runs the native Linux server; smaller and lighter
+- `tbro98/ase-server:proton`: runs the Windows server with GE-Proton and can load ArkApi plugins
+
+The images only contain SteamCMD and the startup scripts (plus GE-Proton in the proton image). **They do not include the game server files or ArkApi.** On the first start, the entrypoint script downloads the server files into the mounted directory. Later starts and container rebuilds reuse them without downloading again.
 
 To manage multiple servers through a web UI, see [ArkServerCommander](https://github.com/TBro1998/ArkServerCommander), which runs on this image.
 
@@ -14,11 +17,11 @@ To manage multiple servers through a web UI, see [ArkServerCommander](https://gi
 
 ## Disclaimer
 - Uses more disk space than running directly on Windows
-- GE-Proton (based on Wine) emulates Windows system APIs on Linux to run the Windows server, so memory usage may be slightly higher
+- The proton image uses GE-Proton (based on Wine) to emulate Windows system APIs on Linux, so memory usage may be slightly higher; use the linux image when you do not need ArkApi
 - The server files are large, and the first start has to wait for the download; how long depends on your network. Each container downloads its own copy, so disk usage multiplies when running several servers
 
 ## Known Issues
-- When running the server with GE-Proton, the server's own output does not appear in the container logs (script output such as downloads and mod installation does)
+- With the proton image, the server's own output does not appear in the container logs (script output such as downloads and mod installation does)
 - Installed mods are not updated when the Workshop version changes; reinstall them manually (see "Updating the server and mods" below)
 - Once the server files are installed, the game server is not updated automatically on start
 
@@ -43,7 +46,8 @@ You can also write your own `docker-compose.yml`:
 ```yaml
 services:
   servers:
-    image: tbro98/ase-server:latest
+    # Without ArkApi, use tbro98/ase-server:linux (native Linux server) and drop the Plugins and ArkApiLogs mounts
+    image: tbro98/ase-server:proton
     container_name: ase-server
     restart: unless-stopped
     ports:
@@ -80,7 +84,16 @@ The first start downloads the server files. Follow the progress with `docker-com
 
 ### 2. Docker Image Version
 
-There is a single image: `tbro98/ase-server`. `latest` is the newest build, and each release also has a version tag (e.g. `v0.35`).
+The same dockerfile builds two images:
+
+| Tag                           | Description                                             |
+| ----------------------------- | ------------------------------------------------------- |
+| `linux`, `<version>-linux`    | Native Linux server                                     |
+| `proton`, `<version>-proton`  | Windows server under GE-Proton, can load ArkApi         |
+
+`latest` is no longer updated; it stays at the last version that bundled ArkApi.
+
+Both images can share one server files directory: `.install_complete` records the platform it was installed for, and after switching images the next start validates the files and only downloads that platform's binaries. Saves, configs and mods are kept. The Linux server reads `Saved/Config/LinuxServer`; the startup script turns it into a symlink to `WindowsServer` so both platforms share one config.
 
 The game branch is selected by the `APP_UPDATE` environment variable:
 
@@ -139,7 +152,7 @@ The install state is kept in two files in the server files directory (`./ServerF
 
 - **Update the game server**: delete `.install_complete` and restart the container. SteamCMD updates and validates the existing files instead of downloading from scratch
 - **Update a mod**: remove that mod ID's line from `.installed_mods` and restart the container
-- **ArkApi**: ships with the image and is synced into the server directory on every start, so updating the image upgrades it. An existing `config.json` is not overwritten
+- **ArkApi** (proton image only): no longer bundled. Extract an ArkApi archive (version.dll, msdia140.dll, config.json, ...) into `ShooterGame/Binaries/Win64` in the server files directory; ArkServerCommander installs and updates it for you
 
 ### 5. Available Maps
 
@@ -161,10 +174,10 @@ Mounting the following directories is recommended:
 
 | Local Path    | Container Path                                                    | Description                                            |
 | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------ |
-| ./ServerFiles | /home/steam/arkserver                                             | Server files, ArkApi and install markers. Without this mount, every container rebuild downloads the server again |
+| ./ServerFiles | /home/steam/arkserver                                             | Server files, ArkApi (proton image) and install markers. Without this mount, every container rebuild downloads the server again |
 | ./Saved       | /home/steam/arkserver/ShooterGame/Saved                           | Server save files, including Config, Logs, SavedArks   |
-| ./Plugins     | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins   | ArkApi plugins                                         |
-| ./ArkApiLogs  | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs             | ArkApi logs                                            |
+| ./Plugins     | /home/steam/arkserver/ShooterGame/Binaries/Win64/ArkApi/Plugins   | ArkApi plugins (proton image only)                     |
+| ./ArkApiLogs  | /home/steam/arkserver/ShooterGame/Binaries/Win64/logs             | ArkApi logs (proton image only)                        |
 
 `Saved`, `Plugins` and `ArkApiLogs` are nested inside the server files directory; mounting them separately makes them easier to back up and edit.
 
@@ -187,7 +200,8 @@ docker-compose pull && docker-compose up -d
 ### 8. Building the Image Yourself
 
 ```bash
-docker build -f dockerfile -t tbro98/ase-server:latest .
+docker build -f dockerfile --target linux -t tbro98/ase-server:linux .
+docker build -f dockerfile --target proton -t tbro98/ase-server:proton .
 ```
 
-Pushing a `v*` tag triggers GitHub Actions to build the image and push both `latest` and the version tag.
+Pushing a `v*` tag triggers GitHub Actions to build both images and push the `linux` and `proton` tags plus the versioned `<version>-linux` and `<version>-proton` tags.

@@ -1,7 +1,10 @@
 name: ASE Server Docker CI
 
-# 只有一个镜像：正式版和 preaquatica 版的区别只是 APP_UPDATE 环境变量，
-# 服务端文件在容器首次启动时才下载，运行时指定分支即可
+# 同一个 dockerfile 构建两个镜像（--target）：
+#   linux   原生 Linux 版服务端              tbro98/ase-server:linux、:<tag>-linux
+#   proton  GE-Proton 运行 Windows 版（ArkApi） tbro98/ase-server:proton、:<tag>-proton
+# latest 不再更新：它停留在最后一个自带 ArkApi 的版本，给还在使用 latest 的旧版管理端。
+# 正式版和 preaquatica 版的区别只是 APP_UPDATE 环境变量，服务端文件在容器首次启动时才下载，运行时指定分支即可
 
 on:
   push:
@@ -38,16 +41,20 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build the Docker image (Release)
+    - name: Build the Docker images (Release)
       run: |
-        docker build . --file dockerfile \
-          -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:latest \
-          -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:${{ steps.vars.outputs.tag }}
+        for target in linux proton; do
+          docker build . --file dockerfile --target "$target" \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$target \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:${{ steps.vars.outputs.tag }}-$target
+        done
 
     - name: Push Docker images (Release)
       run: |
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:${{ steps.vars.outputs.tag }}
+        for target in linux proton; do
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:$target
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/ase-server:${{ steps.vars.outputs.tag }}-$target
+        done
 
   # 镜像推送成功后再发布 Release，保证 Release 里写的 tag 一定有对应的镜像
   release:
@@ -78,8 +85,10 @@ jobs:
           echo '## 镜像'
           echo
           echo '```'
-          echo "${IMAGE}:${TAG}"
-          echo "${IMAGE}:latest"
+          echo "${IMAGE}:${TAG}-linux"
+          echo "${IMAGE}:${TAG}-proton"
+          echo "${IMAGE}:linux"
+          echo "${IMAGE}:proton"
           echo '```'
         } >> release-notes.md
         cat release-notes.md
