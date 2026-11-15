@@ -82,7 +82,7 @@ jobs:
           echo >> release-notes.md
         fi
         {
-          echo '## 镜像'
+          echo '## Images / 镜像'
           echo
           echo '```'
           echo "${IMAGE}:${TAG}-linux"
