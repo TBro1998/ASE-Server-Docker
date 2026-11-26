@@ -79,7 +79,7 @@ services:
 #     driver: bridge
 ```
 
-首次启动会下载服务端文件，可以用 `docker-compose logs -f` 查看进度，看到 `Starting ARK server...` 表示下载和安装已完成，服务端开始启动。
+首次启动会下载服务端文件，可以用 `docker-compose logs -f` 查看进度，看到 `Starting ARK server...` 表示下载和安装已完成，服务端开始启动。之后游戏日志（`ShooterGame.log`）和 ArkApi 的日志也会实时显示在这里，和在 Windows 上运行时控制台窗口里的内容相同（入口脚本会给启动参数加上 `-ForceLogFlush`，让游戏日志实时写入文件）。
 
 ### 2. Docker 镜像版本
 

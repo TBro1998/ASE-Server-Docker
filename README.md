@@ -80,7 +80,7 @@ services:
 #     driver: bridge
 ```
 
-The first start downloads the server files. Follow the progress with `docker-compose logs -f`. When `Starting ARK server...` appears, the download and installation are finished and the server is starting.
+The first start downloads the server files. Follow the progress with `docker-compose logs -f`. When `Starting ARK server...` appears, the download and installation are finished and the server is starting. After that the game log (`ShooterGame.log`) and the ArkApi log are shown here live, the same as the console window on Windows (the entrypoint adds `-ForceLogFlush` to the launch arguments so the game writes its log file line by line).
 
 ### 2. Docker Image Version
 

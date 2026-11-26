@@ -149,6 +149,57 @@ else
     read -r -a SERVER_ARGV <<< "${SERVER_ARGS}"
 fi
 
+# 服务端默认攒满 4 KB 才往 ShooterGame.log 写一次，日志很久才更新，停服时最后不满 4 KB 的部分还可能丢掉。
+# -ForceLogFlush 让每一行都马上写入文件。下面接到容器输出的游戏日志就是从这个文件读的，没有它容器输出也不实时。
+# 启动参数里已经有了就不再加
+FORCE_LOG_FLUSH=1
+for arg in "${SERVER_ARGV[@]}"; do
+    if [ "${arg,,}" = "-forcelogflush" ]; then
+        FORCE_LOG_FLUSH=0
+    fi
+done
+if [ "$FORCE_LOG_FLUSH" = 1 ]; then
+    SERVER_ARGV+=("-ForceLogFlush")
+fi
+
+# Windows 上服务端和 ArkApi 的日志都显示在控制台窗口里，这里没有这个窗口：Linux 版服务端不往标准输出写日志，
+# Proton 下游戏进程的标准输出是 /dev/null，ArkApi 也建不出控制台。所以把两个日志文件接到容器输出，效果和控制台相同。
+# 用轮询：Saved 可能是 Docker Desktop 从 Windows 磁盘绑定进来的目录，收不到 inotify 事件（GNU tail 叫 ---disable-inotify）
+if tail --help 2>&1 | grep -q -- --use-polling; then
+    TAIL_POLL=(--use-polling -s 1)
+else
+    TAIL_POLL=(---disable-inotify -s 1)
+fi
+
+# follow_log 文件 起始行：持续输出日志文件，去掉 Windows 换行和开头的 BOM
+follow_log() {
+    tail -n "$2" -F "${TAIL_POLL[@]}" "$1" 2>/dev/null | sed -u -e 's/^\xEF\xBB\xBF//' -e 's/\r$//'
+}
+
+# ShooterGame.log：游戏启动时会把上次的日志改名为 ShooterGame-backup-*.log 再新建，
+# 所以从当前末尾开始跟随（不输出上次的内容），文件被替换或新建后 tail -F 从头输出新文件
+GAME_LOG="$INSTALL_DIR/ShooterGame/Saved/Logs/ShooterGame.log"
+follow_log "$GAME_LOG" 0 &
+
+# ArkApi 的日志（插件通过 ArkApi 写的日志也在里面）：每次启动新建 logs/ArkApi_<进程号>_<时间>.log，
+# 等这次启动新建的文件出现后再跟随
+if [ "$SERVER_PLATFORM" != "linux" ] && [ -f "$BIN_DIR/version.dll" ]; then
+    ARKAPI_LOG_DIR="$BIN_DIR/logs"
+    OLD_ARKAPI_LOGS=$(ls "$ARKAPI_LOG_DIR" 2>/dev/null)
+    (
+        while :; do
+            for f in "$ARKAPI_LOG_DIR"/ArkApi_*.log; do
+                if [ -f "$f" ] && ! grep -qxF "$(basename "$f")" <<< "$OLD_ARKAPI_LOGS"; then
+                    follow_log "$f" +1
+                    exit
+                fi
+            done
+            sleep 1
+        done
+    ) &
+fi
+# 这几个后台进程不用单独结束：入口脚本是容器的 1 号进程，它退出时容器里的其他进程都会被结束
+
 # Start ARK server
 echo " [*] Starting ARK server..."
 cd "$BIN_DIR"
